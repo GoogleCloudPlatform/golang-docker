@@ -12,7 +12,7 @@ It is based on [`google/golang`](https://index.docker.io/u/google/golang) base i
 
 - Run the following command in your application directory:
 
-        docker -t my/app .
+        docker build -t my/app .
 
 ## Notes
 
