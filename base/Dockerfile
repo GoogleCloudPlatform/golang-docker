@@ -1,6 +1,6 @@
 FROM google/debian:wheezy
 
-RUN apt-get update -y && apt-get install --no-install-recommends -y -q curl build-essential ca-certificates
+RUN apt-get update -y && apt-get install --no-install-recommends -y -q curl build-essential ca-certificates git mercurial
 RUN mkdir /goroot && curl https://storage.googleapis.com/golang/go1.2.2.linux-amd64.tar.gz | tar xvzf - -C /goroot --strip-components=1
 RUN mkdir /gopath
 
