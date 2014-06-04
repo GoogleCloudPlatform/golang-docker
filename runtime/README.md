@@ -22,11 +22,10 @@ The image assumes that your application:
 - listens on port `8080`
 - may have a `gopath` subdirectory containing internal packages dependencies, eg:
 
-      gopath/
-      gopath/internal
-      gopath/internal/internal.go
-      gopath/corp
-      gopath/corp/corp.go
-
+        gopath/
+        gopath/internal
+        gopath/internal/internal.go
+        gopath/corp
+        gopath/corp/corp.go
 
 When building your application docker image, dependencies of your application are automatically fetched using `go get` if not present in the `gopath` subdirectory.
