@@ -1,8 +1,10 @@
 # google/golang-hello
 
-[`google/golang-hello`](https://index.docker.io/u/google/golang-hello) is a [docker](https://docker.io) image for the [golang](http://golang.org) [net/http](http://golang.org/pkg/net/http/) package hello world application.
+[`google/golang-hello`](https://index.docker.io/u/google/golang-hello) is a [docker](https://docker.io) image for an hello world application using ["github.com/gorilla/mux"](http://www.gorillatoolkit.org/pkg/mux).
 
 It is based on [`google/golang-runtime`](https://index.docker.io/u/google/golang-runtime) base image and listen on port `8080`.
+
+It also imports package `internal` from the [`gopath`](gopath) subdirectory.
 
 ## Usage
 
