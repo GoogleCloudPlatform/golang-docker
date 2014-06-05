@@ -4,13 +4,25 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"internal"
+
+	"github.com/gorilla/mux"
 )
 
 func handle(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "<html><body>Hello, World! 세상아 안녕!</body></html>")
+	http.Redirect(w, r, fmt.Sprintf("/%s", internal.Secret), http.StatusFound)
+}
+
+func hello(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "<html><body>Hello, %s! 세상아 안녕!</body></html>", mux.Vars(r)["who"])
 }
 
 func main() {
-	http.HandleFunc("/", handle)
+	r := mux.NewRouter().StrictSlash(true)
+	r.HandleFunc("/", handle).Methods("GET")
+	r.HandleFunc("/{who}", hello).Methods("GET")
+
+	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -2,7 +2,8 @@ FROM google/golang
 
 WORKDIR /gopath/src/app
 ONBUILD ADD . /gopath/src/app/
-ONBUILD RUN go install app
+ONBUILD RUN [ -d gopath ] && mv gopath/* /gopath/src/ && rmdir gopath || true
+ONBUILD RUN go get app
 
 EXPOSE 8080
 CMD []
