@@ -15,7 +15,7 @@
 
         WORKDIR /gopath/src/app
         ADD . /gopath/src/app/
-        RUN go install app
+        RUN go get app
         
         CMD []
         ENTRYPOINT ["/gopath/bin/app"]
