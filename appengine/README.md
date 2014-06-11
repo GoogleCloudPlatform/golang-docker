@@ -20,4 +20,4 @@ The image assumes that your application:
 
 - listens on port `8080`
 
-When the Cloud SDK build your Docker container, it automatically inject the dependencies of your application into the build context, and build them with your application binary.
+When the Cloud SDK builds your Docker container image, it automatically injects the dependencies of your application into the build context, and builds them with your application binary.
