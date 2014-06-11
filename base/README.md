@@ -2,7 +2,7 @@
 
 [`google/golang`](https://index.docker.io/u/google/golang) is a [docker](https://docker.io) base image that bundles the latest version of [golang](http://golang.org) installed from [golang.org](http://golang.org/doc/install/).
 
-It serves as a base for the [`google/golang-runtime`](https://index.docker.io/u/google/golang-runtime) base image.
+It serves as a base for the [`google/golang-runtime`](https://index.docker.io/u/google/golang-runtime) image.
 
 ## Notes
 
