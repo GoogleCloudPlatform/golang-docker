@@ -20,12 +20,12 @@ The image assumes that your application:
 
 - has a `main` package
 - listens on port `8080`
-- may have a `gopath` subdirectory containing internal packages dependencies, eg:
+- may have a `gopath` subdirectory containing a `GOPATH` with internal packages dependencies, eg:
 
         gopath/
-        gopath/internal
-        gopath/internal/internal.go
-        gopath/corp
-        gopath/corp/corp.go
+        gopath/src/internal
+        gopath/src/internal/internal.go
+        gopath/src/corp
+        gopath/src/corp/corp.go
 
 When building your application docker image, dependencies of your application are automatically fetched using `go get` if not present in the `gopath` subdirectory.
