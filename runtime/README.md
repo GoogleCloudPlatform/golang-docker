@@ -34,4 +34,4 @@ The image assumes that your application:
         gopath/src/corp
         gopath/src/corp/corp.go
 
-When building your application docker image, `ONBUILD` triggers fetches the dependencies of your application using `go get` if not present in the `gopath` subdirectory.
+When building your application docker image, `ONBUILD` triggers fetch the dependencies of your application using `go get` if not present in the `gopath` subdirectory.
