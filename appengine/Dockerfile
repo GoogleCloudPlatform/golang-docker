@@ -5,4 +5,5 @@ ONBUILD RUN /app/build.sh
 
 EXPOSE 8080
 CMD []
+WORKDIR /app
 ENTRYPOINT ["/app/_ah_exe"]
