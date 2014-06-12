@@ -1,8 +1,8 @@
 # google/golang-runtime
 
-[`google/golang-runtime`](https://index.docker.io/u/google/golang-runtime) is a [docker](https://docker.io) base image for easily building containers for standard [golang](http://golang.org) applications.
+[`google/golang-runtime`](https://index.docker.io/u/google/golang-runtime) is a [docker](https://docker.io) base image that makes it easy to dockerize standard [golang](http://golang.org) applications.
 
-It can automatically bundle a golang application with its dependencies and set the default entrypoint with no additional Dockerfile instructions.
+It can automatically bundle a golang application with its dependencies and set the default entrypoint to the compiled binary with no additional Dockerfile instructions.
 
 It is based on [`google/golang`](https://index.docker.io/u/google/golang) base image.
 
