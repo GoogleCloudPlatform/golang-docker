@@ -1,10 +1,11 @@
 FROM google/golang
 
-WORKDIR /gopath/src/app
+ADD go-build /bin/go-build
+ADD go-run /bin/go-run
+
 ONBUILD ADD . /gopath/src/app/
-ONBUILD ENV GOPATH /gopath/src/app/gopath:$GOPATH
-ONBUILD RUN go get app
+ONBUILD RUN /bin/go-build
 
 EXPOSE 8080
 CMD []
-ENTRYPOINT ["/gopath/bin/app"]
+ENTRYPOINT ["/bin/go-run"]

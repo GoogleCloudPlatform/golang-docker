@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+if [ -f /gopath/src/app/.godir ]; then
+    GODIR=$(cat /gopath/src/app/.godir)
+    GOBIN=/gopath/bin/$(basename ${GODIR})
+else
+    GOBIN=/gopath/bin/app
+fi
+
+exec ${GOBIN}

@@ -4,7 +4,7 @@
 
 It is based on [`google/golang-runtime`](https://index.docker.io/u/google/golang-runtime) base image and listen on port `8080`.
 
-It also imports package `internal` from the [`gopath`](gopath) subdirectory.
+It also imports package `internal` from the [`vendor`](vendor) subdirectory and define its import path in [`.godir`](.godir).
 
 ## Usage
 

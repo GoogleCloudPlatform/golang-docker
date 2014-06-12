@@ -26,12 +26,6 @@ The image assumes that your application:
 
 - has a `main` package
 - listens on port `8080`
-- may have a `gopath` subdirectory containing a `GOPATH` with internal packages dependencies, eg:
+- may have a `.godir` file containing the import path for your application if it vendors its dependencies
 
-        gopath/
-        gopath/src/internal
-        gopath/src/internal/internal.go
-        gopath/src/corp
-        gopath/src/corp/corp.go
-
-When building your application docker image, `ONBUILD` triggers fetch the dependencies of your application using `go get` if not present in the `gopath` subdirectory.
+When building your application docker image, `ONBUILD` triggers fetch non-vendored dependencies of your application using `go get`.
