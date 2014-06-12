@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+if [ -f /gopath/src/app/.godir ]; then
+    GODIR=$(cat /gopath/src/app/.godir)
+    mkdir -p /gopath/src/$(dirname ${GODIR})
+    ln -s /gopath/src/app /gopath/src/${GODIR}
+    go get ${GODIR}
+else
+    go get app
+fi

@@ -5,8 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"internal"
-
+	"github.com/GoogleCloudPlatform/golang-docker/hello/vendor/internal"
 	"github.com/gorilla/mux"
 )
 
