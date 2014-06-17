@@ -9,6 +9,8 @@ It is based on [`google/golang`](https://index.docker.io/u/google/golang) base i
 - Create a Dockerfile in your App Engine application directory with the following content:
 
         FROM google/appengine-go
+        ADD . /app
+        RUN /app/_ah/build.sh
 
 - Use the Cloud SDK to build and run your application
 
