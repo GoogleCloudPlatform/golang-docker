@@ -18,7 +18,7 @@ It is based on [`google/golang`](https://index.docker.io/u/google/golang) base i
 
 ## Sample
 
-See the [sources](/hello) for [`google/golang-hello`](https://index.docker.io/u/google/golang) based on this image.
+See the [sources](/hello) for [`google/golang-hello`](https://index.docker.io/u/google/golang-hello) based on this image.
 
 ## Notes
 
