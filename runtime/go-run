@@ -9,4 +9,4 @@ else
     GOBIN=/gopath/bin/app
 fi
 
-exec ${GOBIN}
+exec ${GOBIN} $@
