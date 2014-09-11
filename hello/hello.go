@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
+        "os"
 	"github.com/GoogleCloudPlatform/golang-docker/hello/vendor/internal"
 	"github.com/gorilla/mux"
 )
@@ -23,5 +23,9 @@ func main() {
 	r.HandleFunc("/{who}", hello).Methods("GET")
 
 	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	envPort := os.Getenv("PORT")
+	if len(envPort) == 0 { envPort = "8080" }
+	listenOn := fmt.Sprintf(":%s", envPort)
+	fmt.Println("listening on", listenOn)
+	log.Fatal(http.ListenAndServe(listenOn, nil))
 }
