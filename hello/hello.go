@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/GoogleCloudPlatform/golang-docker/hello/vendor/internal"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/GoogleCloudPlatform/golang-docker/hello/vendor/internal"
+	"github.com/gorilla/mux"
 )
 
 func handle(w http.ResponseWriter, r *http.Request) {
