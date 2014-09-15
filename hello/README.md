@@ -8,6 +8,10 @@ It also imports package `internal` from the [`vendor`](vendor) subdirectory and 
 
 ## Usage
 
-- Run the following command
+**Run the following command:**
 
-        docker run -e PORT=8080 -p 8080 google/golang-hello
+        docker run -p 8080 google/golang-hello
+        
+**Run with a custom PORT:**
+
+        docker run -e PORT=9292 -p 9292 google/golang-hello
