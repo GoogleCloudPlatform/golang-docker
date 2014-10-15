@@ -29,6 +29,6 @@ func main() {
 		envPort = "8080"
 	}
 	listenOn := fmt.Sprintf(":%s", envPort)
-	fmt.Println("listening on", listenOn)
+	log.Printf("listening on: %s", listenOn)
 	log.Fatal(http.ListenAndServe(listenOn, nil))
 }
