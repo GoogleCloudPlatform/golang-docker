@@ -1,9 +1,28 @@
-FROM google/debian:wheezy
+# Dockerfile extending the generic Go image with application files for a
+# single application.
+FROM gcr.io/google_appengine/base
 
-RUN apt-get update -y && apt-get install --no-install-recommends -y -q curl build-essential ca-certificates git mercurial bzr
-RUN mkdir /goroot && curl https://storage.googleapis.com/golang/go1.4.linux-amd64.tar.gz | tar xvzf - -C /goroot --strip-components=1
-RUN mkdir /gopath
+RUN apt-get update \
+    && apt-get install -y \
+       curl gcc git libc6-dev make \
+       --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
-ENV GOROOT /goroot
-ENV GOPATH /gopath
-ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
+ENV GO_VERSION 1.5
+ENV GO15VENDOREXPERIMENT 1
+
+RUN curl -sSL https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz \
+    | tar -v -C /usr/local -xz
+
+ENV PATH /go/bin:/usr/local/go/bin:$PATH
+ENV GOPATH /go:/go/src/app/_gopath
+
+RUN mkdir -p /go/src/app /go/bin && chmod -R 777 /go
+
+COPY go-wrapper /usr/local/bin/
+RUN chmod 755 /usr/local/bin/go-wrapper
+
+RUN ln -s /go/src/app /app
+WORKDIR /go/src/app
+
+CMD ["go-wrapper", "run"]
