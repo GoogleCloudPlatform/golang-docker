@@ -7,3 +7,5 @@ RUN mkdir /gopath
 ENV GOROOT /goroot
 ENV GOPATH /gopath
 ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
+
+ONBUILD RUN echo "This image is now deprecated. If you are not using Managed VMs, you should use the official Go Docker image located at: https://hub.docker.com/_/golang/"
