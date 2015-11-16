@@ -8,11 +8,16 @@ RUN apt-get update \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GO_VERSION 1.5
+ENV GO_VERSION 1.5.1
+ENV GO_TARFILE go${GO_VERSION}.linux-amd64.tar.gz
+ENV GO_DOWNLOAD_URL https://golang.org/dl/${GO_TARFILE}
+ENV GO_DOWNLOAD_SHA1 46eecd290d8803887dec718c691cc243f2175fe0
 ENV GO_WRAPPER_COMMIT 6ea1f29b1fe7e6b0b8eb89493ed5e06bac454654
 
-RUN curl -sSL https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz \
-    | tar -v -C /usr/local -xz
+RUN curl -fsSLO "${GO_DOWNLOAD_URL}" \
+	&& echo "${GO_DOWNLOAD_SHA1} ${GO_TARFILE}" | sha1sum -c - \
+	&& tar -C /usr/local -xzf ${GO_TARFILE} \
+	&& rm ${GO_TARFILE}
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
 ENV GOPATH /go:/go/src/app/_gopath
