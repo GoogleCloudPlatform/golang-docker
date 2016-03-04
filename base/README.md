@@ -11,8 +11,8 @@ It serves as a base for Go apps running on Google App Engine
 
 ### Vendoring
 
-Your application will be built using Go 1.5 inside the docker instance without
-the experimental vendoring support.  To enable Go 1.5 experimental vendoring
+Your application will be built using Go 1.6 inside the docker instance without
+the experimental vendoring support.  To enable Go 1.6 experimental vendoring
 support, set the environment variable like this:
 
         FROM gcr.io/google_appengine/golang
