@@ -8,8 +8,8 @@ RUN apt-get update \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GO_VERSION 1.6
-ENV GO_WRAPPER_COMMIT 3cdd85183c0f3f6608588166410d24260cd8cb2f
+ENV GO_VERSION 1.6.2
+ENV GO_WRAPPER_COMMIT e40c36ae71756198478624ed1bb4ce17597b3c19d243f3f0899bb5740d56212a
 
 RUN curl -sSL https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz \
     | tar -v -C /usr/local -xz
