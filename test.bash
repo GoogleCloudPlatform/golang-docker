@@ -24,3 +24,11 @@ docker run --rm $IMG go version | grep go1\.6\.3
 
 # Check that GOPATH is in the place expected by google.golang.org/appengine/cmd/aedeploy
 docker run --rm $IMG bash -c 'go env | grep "GOPATH.*$PWD/_gopath"'
+
+for case in $(find testdata -mindepth 1 -maxdepth 2 -type d); do
+  cp testdata/Dockerfile $case
+  # NOTE(cbro): re-use name to minimize number of images.
+  docker build -t "${IMG}-test" $case
+  docker run --rm "${IMG}-test"
+  rm $case/Dockerfile
+done

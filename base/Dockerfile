@@ -17,7 +17,7 @@ FROM gcr.io/google_appengine/base
 
 RUN apt-get update \
     && apt-get install -y \
-       curl \
+       curl gcc libc6-dev \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
@@ -28,7 +28,27 @@ RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.ta
     curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz.sha256 -o /tmp/go.tar.gz.sha256 && \
     echo "$(cat /tmp/go.tar.gz.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -vxzf /tmp/go.tar.gz && \
-    rm /tmp/go.tar.gz /tmp/go.tar.gz.sha256
+    rm /tmp/go.tar.gz /tmp/go.tar.gz.sha256 && \
+    # Remove unnecssary files from the Go distro.
+    rm -rf /usr/local/go/blog \
+           /usr/local/go/test \
+           /usr/local/go/api \
+           /usr/local/go/misc \
+           /usr/local/go/bin/godoc \
+           /usr/local/go/bin/gofmt \
+           /usr/local/go/pkg/linux_amd64_race \
+           /usr/local/go/pkg/tool/linux_amd64/cover \
+           /usr/local/go/pkg/tool/linux_amd64/doc \
+           /usr/local/go/pkg/tool/linux_amd64/dist \
+           /usr/local/go/pkg/tool/linux_amd64/nm \
+           /usr/local/go/pkg/tool/linux_amd64/objdump \
+           /usr/local/go/pkg/tool/linux_amd64/pprof \
+           /usr/local/go/pkg/tool/linux_amd64/addr2line \
+           /usr/local/go/pkg/tool/linux_amd64/yacc \
+           /usr/local/go/pkg/tool/linux_amd64/tour \
+           /usr/local/go/pkg/tool/linux_amd64/trace \
+           /usr/local/go/pkg/tool/linux_amd64/fix \
+    ;
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
 ENV GOPATH /go:/go/src/app/_gopath
