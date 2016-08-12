@@ -1,0 +1,11 @@
+sudo: required
+
+services:
+- docker
+
+branches:
+  only:
+    - master
+
+script:
+- ./test.bash
