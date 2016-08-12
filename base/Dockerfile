@@ -17,15 +17,18 @@ FROM gcr.io/google_appengine/base
 
 RUN apt-get update \
     && apt-get install -y \
-       curl gcc git libc6-dev make \
+       curl \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 ENV GO_VERSION 1.6.3
 ENV GO_WRAPPER_COMMIT 3cdd85183c0f3f6608588166410d24260cd8cb2f
 
-RUN curl -sSL https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz \
-    | tar -v -C /usr/local -xz
+RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
+    curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz.sha256 -o /tmp/go.tar.gz.sha256 && \
+    echo "$(cat /tmp/go.tar.gz.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
+    tar -C /usr/local -vxzf /tmp/go.tar.gz && \
+    rm /tmp/go.tar.gz /tmp/go.tar.gz.sha256
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
 ENV GOPATH /go:/go/src/app/_gopath
