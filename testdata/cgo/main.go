@@ -1,4 +1,3 @@
-// Copyright 2013 The Go Authors.  All rights reserved.
 /*
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
