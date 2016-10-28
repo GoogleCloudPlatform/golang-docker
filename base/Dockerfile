@@ -22,7 +22,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 ENV GO_VERSION 1.6.3
-ENV GO_WRAPPER_COMMIT 3cdd85183c0f3f6608588166410d24260cd8cb2f
 
 RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
     curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz.sha256 -o /tmp/go.tar.gz.sha256 && \
@@ -35,9 +34,8 @@ ENV GOPATH /go:/go/src/app/_gopath
 
 RUN mkdir -p /go/src/app /go/bin && chmod -R 777 /go
 
-RUN curl https://raw.githubusercontent.com/docker-library/golang/${GO_WRAPPER_COMMIT}/1.6/go-wrapper \
-    -o /usr/local/bin/go-wrapper \
-    && chmod 755 /usr/local/bin/go-wrapper
+COPY third_party/go-wrapper/go-wrapper /usr/local/bin/go-wrapper
+RUN chmod 755 /usr/local/bin/go-wrapper
 
 RUN ln -s /go/src/app /app
 WORKDIR /go/src/app
