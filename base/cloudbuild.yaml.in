@@ -1,0 +1,8 @@
+steps:
+  # - name: gcr.io/cloud-builders/docker
+  #   args: ['build', '--tag=gcr.io/nick-cloudbuild/golang:${VERSION}', '.']
+  #   id: BUILD
+  - name: gcr.io/nick-cloudbuild/structure_test:envvar
+    args: ['--image', 'gcr.io/nick-cloudbuild/golang:${VERSION}', '-v', '--config', '/workspace/test_config.json']
+    id: STRUCTURE_TEST
+images: ['gcr.io/nick-cloudbuild/golang:${VERSION}']
