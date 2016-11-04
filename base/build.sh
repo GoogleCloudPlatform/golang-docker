@@ -1,14 +1,14 @@
 #!/bin/bash
 
+usage() { echo "Usage: ./build.sh [target_image_path]"; exit 1; }
+
 set -e
 
-export VERSION=$1
+export IMAGE=$1
 
-if [ -z "$1" ]; then
-  echo "Usage: ./build.sh [version]"
-  echo "Please provide version to tag image."
-  exit 1
+if [ -z "$IMAGE" ]; then
+  usage
 fi
 
 envsubst < cloudbuild.yaml.in > cloudbuild.yaml
-gcloud alpha container builds create . --config=cloudbuild.yaml
+gcloud beta container builds submit . --config=cloudbuild.yaml
