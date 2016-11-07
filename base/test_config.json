@@ -3,12 +3,14 @@
 	"commandTests": [
 		{
 			"name": "Go Version",
-			"command": "go version",
+			"command": "go",
+			"flags": ["version"],
 			"expectedOutput": ["go1\\.6\\.3.*"],
 			"expectedError": [""]
 		},{
 			"name": "Go Path",
-			"command": "go env",
+			"command": "go",
+			"flags": ["env"],
 			"envVars": ["PWD"],
 			"expectedOutput": [".*GOPATH.*$PWD/_gopath.*"],
 			"expectedError": [""]
@@ -18,7 +20,8 @@
 			"expectedOutput": ["/go/src/app\n"]
 		},{
 			"name": "Workdir Symlink",
-			"command": "pwd -P",
+			"command": "pwd",
+			"flags": ["-P"],
 			"expectedOutput": ["/go/src/app\n"]
 		}
 	],
