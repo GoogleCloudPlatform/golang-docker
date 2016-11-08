@@ -1,5 +1,8 @@
 sudo: required
 
+env:
+  - IMAGE_NAME="golang:staging"
+
 services:
 - docker
 
@@ -10,4 +13,5 @@ branches:
 script:
 - curl https://raw.githubusercontent.com/GoogleCloudPlatform/runtimes-common/master/structure_tests/ext_run.sh > ext_run.sh
 - chmod +x ext_run.sh
-- ./ext_run.sh -i gcr.io/google_appengine/golang -v --config test/test_config.json
+- docker build -t "$IMAGE_NAME" -q base/
+- ./ext_run.sh -i "$IMAGE_NAME" -v --config test/test_config.json
