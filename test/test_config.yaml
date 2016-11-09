@@ -1,0 +1,23 @@
+schemaVersion: "1.0.0"
+commandTests:
+- name: 'Go Version'
+  command: 'go'
+  flags: ['version']
+  expectedOutput: ["go1\\.6\\.3.*"]
+  expectedError: ['']
+
+- name: 'Go Path'
+  command: 'go'
+  flags: ['env']
+  envVars: ['PWD']
+  expectedOutput: [".*GOPATH.*$PWD/_gopath.*"]
+  expectedError: ['']
+
+- name: 'Default Workdir'
+  command: 'pwd'
+  expectedOutput: ["/go/src/app\n"]
+
+- name: "Workdir Symlink"
+  command: 'pwd'
+  flags: ['-P']
+  expectedOutput: ["/go/src/app\n"]
