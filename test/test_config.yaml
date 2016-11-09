@@ -10,7 +10,7 @@ commandTests:
   command: 'go'
   flags: ['env']
   envVars: ['PWD']
-  expectedOutput: [".*GOPATH.*$PWD/_gopath.*"]
+  expectedOutput: [".*GOPATH=\"/go:$PWD/_gopath.*"]
   expectedError: ['']
 
 - name: 'Default Workdir'
