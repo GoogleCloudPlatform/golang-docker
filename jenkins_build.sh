@@ -16,21 +16,20 @@
 
 set -e
 
-cd base/
-sed -i "s,^\(FROM.*\),\\1:$BASE_TAG," Dockerfile
+sed -i "s,^\(FROM.*\),\\1:$BASE_TAG," base/Dockerfile
 
 RUNTIME_NAME="golang"
 
 CANDIDATE_NAME=`date +%Y-%m-%d_%H_%M`
 echo "CANDIDATE_NAME:${CANDIDATE_NAME}"
-IMAGE_NAME="${DOCKER_NAMESPACE}/${RUNTIME_NAME}:${CANDIDATE_NAME}"
+export IMAGE="${DOCKER_NAMESPACE}/${RUNTIME_NAME}:${CANDIDATE_NAME}"
 
 envsubst < base/cloudbuild.yaml.in > base/cloudbuild.yaml
 
-gcloud beta container builds submit . --config=base/cloudbuild.yaml . -q
+gcloud alpha container builds create --config=base/cloudbuild.yaml . -q
 
 if [ "${UPLOAD_TO_STAGING}" = "true" ]; then
   STAGING="${DOCKER_NAMESPACE}/${RUNTIME_NAME}:staging"
-  docker tag -f "${IMAGE_NAME}" "${STAGING}"
+  docker tag -f "${IMAGE}" "${STAGING}"
   gcloud docker push "${STAGING}"
 fi
