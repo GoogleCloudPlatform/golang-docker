@@ -1,26 +1,28 @@
 #!/bin/bash
+
 # Copyright 2016 Google Inc. All rights reserved.
-#
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
+
 #     http://www.apache.org/licenses/LICENSE-2.0
-#
+
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# test.bash builds the image and performs rudimentary checks.
+usage() { echo "Usage: ./build.sh [target_image_path]"; exit 1; }
 
-set -e -x
+set -e
 
-IMG=gcr.io/google_appengine/golang
+export IMAGE=$1
 
-docker build -t $IMG base/
-docker run --rm $IMG go version | grep go1\.6\.3
+if [ -z "$IMAGE" ]; then
+  usage
+fi
 
-# Check that GOPATH is in the place expected by google.golang.org/appengine/cmd/aedeploy
-docker run --rm $IMG bash -c 'go env | grep "GOPATH.*$PWD/_gopath"'
+envsubst < base/cloudbuild.yaml.in > base/cloudbuild.yaml
+gcloud beta container builds submit --config=base/cloudbuild.yaml .
