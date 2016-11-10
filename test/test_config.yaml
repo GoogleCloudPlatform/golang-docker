@@ -7,7 +7,7 @@ commandTests:
 
 - name: 'Go Path'
   command: ['go', 'env']
-  expectedOutput: [".*GOPATH=\"/go:$PWD/_gopath.*"]
+  expectedOutput: [".*GOPATH=\"/go:/go/src/app/_gopath.*"]
   expectedError: ['']
 
 - name: 'Default Workdir'
