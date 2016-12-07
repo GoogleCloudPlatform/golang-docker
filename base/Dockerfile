@@ -40,4 +40,9 @@ RUN chmod 755 /usr/local/bin/go-wrapper
 RUN ln -s /go/src/app /app
 WORKDIR /go/src/app
 
+ENV CLOUD_DEBUG_ENABLE "true"
+RUN curl -o /usr/local/bin/go-cloud-debug https://storage.googleapis.com/cloud-debugger/compute-go/go-cloud-debug && \
+    chmod 755 /usr/local/bin/go-cloud-debug
+
 CMD ["go-wrapper", "run"]
+
