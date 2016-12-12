@@ -17,3 +17,7 @@ commandTests:
 - name: "Workdir Symlink"
   command: ['pwd', '-P']
   expectedOutput: ["/go/src/app\n"]
+
+licenseTests:
+- debian: true
+  files: []
