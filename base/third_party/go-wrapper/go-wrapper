@@ -98,8 +98,8 @@ case "$cmd" in
 		fi
 		set -x; exec go-cloud-debug \
 			-sourcecontext ./source-context.json \
-			-appmodule ${service} \
-			-appversion ${version} \
+			-appmodule "${service}" \
+			-appversion "${version}" \
             -- "$(which $goBin)" "$@"
 		;;
 		
