@@ -86,25 +86,21 @@ case "$cmd" in
 		;;
 		
 	run)
-		if [ -n "${CLOUD_DEBUG_ENABLE}" ] && [ "${CLOUD_DEBUG_ENABLE}" != "false" ]; then
-			if [ -n "${GAE_SERVICE}" ]; then
-				service="${GAE_SERVICE}"
-			else
-				service="default"
-			fi
-			if [ -n "${GAE_VERSION}" ]; then
-				version="${GAE_VERSION}"
-			else
-				version="default"
-			fi
-			set -x; exec go-cloud-debug \
-				-sourcecontext ./source-context.json \
-				-appmodule ${service} \
-				-appversion ${version} \
-                                -- "$(which $goBin)" "$@"
+		if [ -n "${GAE_SERVICE}" ]; then
+			service="${GAE_SERVICE}"
 		else
-			set -x; exec "$goBin" "$@"
+			service="default"
 		fi
+		if [ -n "${GAE_VERSION}" ]; then
+			version="${GAE_VERSION}"
+		else
+			version="default"
+		fi
+		set -x; exec go-cloud-debug \
+			-sourcecontext ./source-context.json \
+			-appmodule ${service} \
+			-appversion ${version} \
+            -- "$(which $goBin)" "$@"
 		;;
 		
 	*)
