@@ -86,21 +86,25 @@ case "$cmd" in
 		;;
 		
 	run)
-		if [ -n "${GAE_SERVICE}" ]; then
-			service="${GAE_SERVICE}"
+		if [ -f "./source-context.json" ]; then
+			if [ -n "${GAE_SERVICE}" ]; then
+				service="${GAE_SERVICE}"
+			else
+				service="default"
+			fi
+			if [ -n "${GAE_VERSION}" ]; then
+				version="${GAE_VERSION}"
+			else
+				version="default"
+			fi
+			set -x; exec go-cloud-debug \
+				-sourcecontext ./source-context.json \
+				-appmodule "${service}" \
+				-appversion "${version}" \
+				-- "$(which $goBin)" "$@"
 		else
-			service="default"
+			set -x; exec "$goBin" "$@"
 		fi
-		if [ -n "${GAE_VERSION}" ]; then
-			version="${GAE_VERSION}"
-		else
-			version="default"
-		fi
-		set -x; exec go-cloud-debug \
-			-sourcecontext ./source-context.json \
-			-appmodule "${service}" \
-			-appversion "${version}" \
-            -- "$(which $goBin)" "$@"
 		;;
 		
 	*)
