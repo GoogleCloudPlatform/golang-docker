@@ -14,26 +14,29 @@
 # limitations under the License.
 
 # go-build.sh runs Go build in the workspace.
-# usage: go-build.sh WORKSPACE GOPATH
+# usage: go-build.sh RUN_IMAGE WORKSPACE GOPATH
 
-cd "$1"
-export GOPATH="$2"
+runimage="$1"
+workspace="$2"
+export GOPATH="$3"
+
+cd "$workspace"
 goDir="$(go list -e -f '{{.ImportComment}}' 2>/dev/null || true)"
 
 if [ "$goDir" ]; then
 	goDirPath="$GOPATH/src/$goDir"
 	mkdir -p "$(dirname "$goDirPath")"
-	ln -sfv "$1" "$goDirPath"
+	ln -sfv "$workspace" "$goDirPath"
 else
 	mkdir -p "$GOPATH"
-	ln -sfv "$1" "$GOPATH/src"
+	ln -sfv "$workspace" "$GOPATH/src"
 fi
 
 go get -d
 go build -o app
 
 cat > Dockerfile <<EOF 
-FROM gcr.io/google_appengine/debian8
+FROM $runimage
 COPY app /app
 CMD ["/app"]
 EOF
