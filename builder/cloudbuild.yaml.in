@@ -2,4 +2,4 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args: ['build', '--tag=${IMAGE}-builder:${BUILD_TAG}', '--no-cache', './builder']
     id: BUILD
-images: ['${IMAGE}-builder']
+images: ['${IMAGE}-builder:${BUILD_TAG}']
