@@ -5,4 +5,4 @@ steps:
   - name: gcr.io/gcp-runtimes/structure_test
     args: ['--image', '${IMAGE}', '-v', '--config', '/workspace/test/test_config.yaml']
     id: STRUCTURE_TEST
-images: ['${IMAGE}']
+images: ['${IMAGE}:${BUILD_TAG}']
