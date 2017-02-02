@@ -1,5 +1,5 @@
 #!/bin/sh
-# set -e
+set -e
 
 usage() {
 	base="$(basename "$0")"
@@ -97,7 +97,7 @@ case "$cmd" in
 				-- "$goBinLoc" "$@"
 			exitCode="$?"
 			if [ "$exitCode" -eq 103 ]; then
-                # Fallback to running the binary itself if failed to get the application default credentials.
+				# Fallback to running the binary itself if failed to get the application default credentials.
 				exec "$goBin" "$@"
             else
                 exit "$exitCode"
