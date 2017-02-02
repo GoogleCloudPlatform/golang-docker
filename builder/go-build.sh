@@ -37,6 +37,6 @@ go build -o app
 
 cat > Dockerfile <<EOF 
 FROM $runimage
-COPY app /app
-CMD ["/app"]
+COPY app /go/bin/app
+ENTRYPOINT ["/go/bin/app"]
 EOF
