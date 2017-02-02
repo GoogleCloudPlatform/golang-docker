@@ -3,6 +3,6 @@ steps:
     args: ['build', '--tag=${IMAGE}:${BUILD_TAG}', '--no-cache', './base']
     id: BUILD
   - name: gcr.io/gcp-runtimes/structure_test
-    args: ['--image', '${IMAGE}', '-v', '--config', '/workspace/test/test_config.yaml']
+    args: ['--image', '${IMAGE}:${BUILD_TAG}', '-v', '--config', '/workspace/test/test_config.yaml']
     id: STRUCTURE_TEST
 images: ['${IMAGE}:${BUILD_TAG}']
