@@ -89,11 +89,19 @@ case "$cmd" in
 		if [ -f "./source-context.json" ]; then
 			service="${GAE_SERVICE:-default}"
 			version="${GAE_VERSION:-default}"
-			set -x; exec go-cloud-debug \
+			goBinLoc="$(which $goBin)"
+			set +e; set -x; go-cloud-debug \
 				-sourcecontext ./source-context.json \
 				-appmodule "${service}" \
 				-appversion "${version}" \
-				-- "$(which $goBin)" "$@"
+				-- "$goBinLoc" "$@"
+			exitCode="$?"
+			if [ "$exitCode" -eq 103 ]; then
+				# Fallback to running the binary itself if failed to get the application default credentials.
+				exec "$goBin" "$@"
+            else
+                exit "$exitCode"
+			fi
 		else
 			set -x; exec "$goBin" "$@"
 		fi
