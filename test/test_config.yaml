@@ -2,7 +2,7 @@ schemaVersion: "1.0.0"
 commandTests:
 - name: 'Go Version'
   command: ['go', 'version']
-  expectedOutput: ["go1\\.6\\.3.*"]
+  expectedOutput: ["go1\\.8\\.*"]
   expectedError: ['']
 
 - name: 'Go Path'

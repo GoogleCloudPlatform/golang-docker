@@ -21,13 +21,13 @@ RUN apt-get update \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GO_VERSION 1.6.3
+ENV GO_VERSION 1.8
 
 RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
-    curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz.sha256 -o /tmp/go.tar.gz.sha256 && \
-    echo "$(cat /tmp/go.tar.gz.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
+    CHECKSUM=53ab94104ee3923e228a2cb2116e5e462ad3ebaeea06ff04463479d7f12d27ca && \
+    echo "${CHECKSUM}  /tmp/go.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -vxzf /tmp/go.tar.gz && \
-    rm /tmp/go.tar.gz /tmp/go.tar.gz.sha256
+    rm /tmp/go.tar.gz
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
 ENV GOPATH /go:/go/src/app/_gopath
@@ -42,6 +42,8 @@ WORKDIR /go/src/app
 
 RUN curl -sSL https://storage.googleapis.com/cloud-debugger/compute-go/go-cloud-debug -o /usr/local/bin/go-cloud-debug && \
     chmod 755 /usr/local/bin/go-cloud-debug
+
+LABEL go_version=$GO_VERSION
 
 CMD ["go-wrapper", "run"]
 
