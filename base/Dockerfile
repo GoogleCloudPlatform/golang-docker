@@ -24,7 +24,7 @@ RUN apt-get update \
 ENV GO_VERSION 1.8
 
 RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
-    CHECKSUM=53ab94104ee3923e228a2cb2116e5e462ad3ebaeea06ff04463479d7f12d27ca; \
+    CHECKSUM=53ab94104ee3923e228a2cb2116e5e462ad3ebaeea06ff04463479d7f12d27ca && \
     echo "${CHECKSUM}  /tmp/go.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -vxzf /tmp/go.tar.gz && \
     rm /tmp/go.tar.gz
