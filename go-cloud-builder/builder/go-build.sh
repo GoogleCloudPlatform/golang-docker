@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2017 Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -10,9 +12,20 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License
 
-# Dockerfile that runs a App Engine flexible environment Go application.
+# go-build.sh runs Go build in the workspace.
+# usage: go-build.sh RUN_IMAGE WORKSPACE
+
+set -e -x
+
+workspace="$1"
+cd "$workspace"
+go build -o app -tags appenginevm
+
+mv /usr/local/bin/* .
+
+cat > Dockerfile <<EOF
 FROM gcr.io/google_appengine/debian8
 
 RUN apt-get update \
@@ -21,16 +34,17 @@ RUN apt-get update \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GO_VERSION 1.6.3
+ENV PATH /go/bin:/usr/local/go/bin:$PATH
 
-RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
-    curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz.sha256 -o /tmp/go.tar.gz.sha256 && \
-    echo "$(cat /tmp/go.tar.gz.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
-    tar -C /usr/local -xzf /tmp/go.tar.gz && \
-    rm /tmp/go.tar.gz /tmp/go.tar.gz.sha256
+RUN mkdir -p /go/src/app /go/bin && chmod -R 777 /go
 
-ENV PATH /usr/local/go/bin:$PATH
-COPY go-build.sh /usr/local/bin/
-# RUN_IMAGE is substituted by build.sh
-CMD ["/bin/bash", "/usr/local/bin/go-build.sh", "{{RUN_IMAGE}}", "/workspace", "/go"]
+COPY go-run.sh /usr/local/bin/go-run
+RUN chmod 755 /usr/local/bin/go-run
 
+COPY go-cloud-debug-agent /usr/local/bin/go-cloud-debug
+RUN chmod 755 /usr/local/bin/go-cloud-debug
+
+COPY . /app
+WORKDIR /app
+ENTRYPOINT ["go-run", "/app/app"]
+EOF
