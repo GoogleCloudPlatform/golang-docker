@@ -17,7 +17,7 @@
 # go-build.sh runs Go build in the workspace.
 # usage: go-build.sh RUN_IMAGE WORKSPACE
 
-set -e -x
+set -e
 
 workspace="$1"
 cd "$workspace"

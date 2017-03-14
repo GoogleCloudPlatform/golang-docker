@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2017 Google Inc. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-usage() { echo "Usage: ./build.sh [target_image_path] [build_tag]"; exit 1; }
+usage() { echo "Usage: ./build.sh [project_id] [build_tag]"; exit 1; }
 
 set -e
 
