@@ -15,36 +15,32 @@
 # limitations under the License
 
 # go-build.sh runs Go build in the workspace.
-# usage: go-build.sh RUN_IMAGE WORKSPACE
+# usage: go-build.sh WORKSPACE
 
 set -e
 
 workspace="$1"
 cd "$workspace"
-go build -o app -tags appenginevm
+staging=$(mktemp -d staging.XXXX) # contains the source files without dependencies
+find . -mindepth 1 -maxdepth 1 ! -name "$staging" ! -name "$(basename $GOPATH)" -exec mv {} "$staging"/ \;
 
-mv /usr/local/bin/* .
+mkdir bin # contains all the bianries we need in the final image
+cd "$staging"
+go build -o "$workspace"/bin/app -tags appenginevm
+cd "$workspace"
+
+mv /usr/local/bin/go-run.sh bin/go-run.sh
+mv /usr/local/bin/go-cloud-debug bin/go-cloud-debug
+chmod 755 bin/go-cloud-debug
 
 cat > Dockerfile <<EOF
 FROM gcr.io/google_appengine/debian8
 
-RUN apt-get update \
-    && apt-get install -y \
-       curl \
-       --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
-
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
 
-RUN mkdir -p /go/src/app /go/bin && chmod -R 777 /go
+COPY bin/ /usr/local/bin/
+COPY $staging /app
 
-COPY go-run.sh /usr/local/bin/go-run
-RUN chmod 755 /usr/local/bin/go-run
-
-COPY go-cloud-debug-agent /usr/local/bin/go-cloud-debug
-RUN chmod 755 /usr/local/bin/go-cloud-debug
-
-COPY . /app
 WORKDIR /app
-ENTRYPOINT ["go-run", "/app/app"]
+ENTRYPOINT ["go-run.sh", "/usr/local/bin/app"]
 EOF

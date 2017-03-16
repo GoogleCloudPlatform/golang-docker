@@ -19,6 +19,7 @@ usage() { echo "Usage: ./build.sh [project_id] [build_tag]"; exit 1; }
 set -e
 
 export PROJECT="$1"
+# TODO: Generate the BUILD_TAG instead of taking as an arg.
 export BUILD_TAG="$2"
 
 if [ -z "$PROJECT" -o -z "$BUILD_TAG" ]; then

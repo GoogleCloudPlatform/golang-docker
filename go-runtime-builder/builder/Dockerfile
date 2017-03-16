@@ -32,11 +32,12 @@ RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.ta
 ENV PATH /usr/local/go/bin:$PATH
 ENV GOPATH /workspace/_gopath
 
-COPY go-build.sh /usr/local/bin/go-build
-RUN chmod 755 /usr/local/bin/go-build
+COPY go-build.sh /usr/local/bin/go-build.sh
+COPY go-run.sh /usr/local/bin/go-run.sh
 
 RUN curl -sSL https://storage.googleapis.com/cloud-debugger/compute-go/go-cloud-debug -o /usr/local/bin/go-cloud-debug && \
     chmod 755 /usr/local/bin/go-cloud-debug
 
 # RUN_IMAGE is substituted by build.sh
-CMD ["go-build", "/workspace"]
+ENTRYPOINT ["go-build.sh"]
+CMD ["/workspace"]
