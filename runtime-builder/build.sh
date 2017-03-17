@@ -1,30 +1,31 @@
 #!/bin/bash
 
 # Copyright 2017 Google Inc. All rights reserved.
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-usage() { echo "Usage: ./build.sh [project_id] [build_tag]"; exit 1; }
+usage() { echo "Usage: $0 [project_id] [go_version]"; exit 1; }
 
 set -e
 
 export PROJECT="$1"
-# TODO: Generate the BUILD_TAG instead of taking as an arg.
-export BUILD_TAG="$2"
+export GO_VERSION="$2"
+export BUILD_TAG="$GO_VERSION"-`date +%Y-%m-%d_%H_%M`
+export DEBIAN_TAG="latest"
 
-if [ -z "$PROJECT" -o -z "$BUILD_TAG" ]; then
+if [ -z "$PROJECT" -o -z "$GO_VERSION" ]; then
   usage
 fi
 
-envsubst < builder/cloudbuild.yaml.in > builder/cloudbuild.yaml
-gcloud beta container builds submit --config=builder/cloudbuild.yaml .
+envsubst < cloudbuild.yaml.in > cloudbuild.yaml
+gcloud beta container builds submit --config=cloudbuild.yaml .

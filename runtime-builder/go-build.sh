@@ -20,26 +20,32 @@
 set -e
 
 workspace="$1"
-cd "$workspace"
-staging=$(mktemp -d staging.XXXX) # contains the source files without dependencies
-find . -mindepth 1 -maxdepth 1 ! -name "$staging" ! -name "$(basename $GOPATH)" -exec mv {} "$staging"/ \;
+export PATH=/usr/local/go/bin:"${PATH}"
+export GOPATH="${workspace}"/_gopath
 
-mkdir bin # contains all the bianries we need in the final image
-cd "$staging"
-go build -o "$workspace"/bin/app -tags appenginevm
-cd "$workspace"
+cd "${workspace}"
 
-mv /usr/local/bin/go-run.sh bin/go-run.sh
-mv /usr/local/bin/go-cloud-debug bin/go-cloud-debug
-chmod 755 bin/go-cloud-debug
+# Move application files into a temporary staging directory, dependencies excluded.
+staging=$(mktemp -d staging.XXXX)
+find . -mindepth 1 -maxdepth 1 ! -name "${staging}" ! -name "$(basename $GOPATH)" -exec mv {} "${staging}"/ \;
+
+# Create a bin/ directory containing all the binaries we need in the final image
+mkdir bin
+cd "${staging}"
+go build -o "${workspace}"/bin/app -tags appenginevm
+cd "${workspace}"
+
+mv /usr/local/bin/go-run.sh "${workspace}"/bin/
+mv /usr/local/bin/go-cloud-debug "${workspace}"/bin/
+mv "${staging}" "${workspace}"/app
 
 cat > Dockerfile <<EOF
-FROM gcr.io/google_appengine/debian8
+FROM gcr.io/google_appengine/debian8:$DEBIAN_TAG
 
-ENV PATH /go/bin:/usr/local/go/bin:$PATH
+LABEL go_version="{GO_VERSION}"
 
 COPY bin/ /usr/local/bin/
-COPY $staging /app
+COPY app/ /app/
 
 WORKDIR /app
 ENTRYPOINT ["go-run.sh", "/usr/local/bin/app"]
