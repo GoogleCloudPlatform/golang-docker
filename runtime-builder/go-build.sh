@@ -15,11 +15,21 @@
 # limitations under the License
 
 # go-build.sh runs Go build in the workspace.
-# usage: go-build.sh WORKSPACE
+
+usage() { echo "Usage: $0 WORKSPACE"; exit 1; }
 
 set -e
 
 workspace="$1"
+if [ -z "${workspace}" ]; then
+    usage
+fi
+
+if [ -z "${GO_VERSION}" -o -z "${DEBIAN_TAG}" ]; then
+    echo "Missing env variable(s): GO_VERSION='${GO_VERSION}', DEBIAN_TAG='${DEBIAN_TAG}'."
+    exit 1
+fi
+
 export PATH=/usr/local/go/bin:"${PATH}"
 export GOPATH="${workspace}"/_gopath
 
@@ -39,10 +49,11 @@ mv /usr/local/bin/go-run.sh "${workspace}"/bin/
 mv /usr/local/bin/go-cloud-debug "${workspace}"/bin/
 mv "${staging}" "${workspace}"/app
 
+# Generate the final images in which the app runs.
 cat > Dockerfile <<EOF
 FROM gcr.io/google_appengine/debian8:$DEBIAN_TAG
 
-LABEL go_version="{GO_VERSION}"
+LABEL go_version="${GO_VERSION}"
 
 COPY bin/ /usr/local/bin/
 COPY app/ /app/

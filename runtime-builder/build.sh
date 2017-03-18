@@ -14,18 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-usage() { echo "Usage: $0 [project_id] [go_version]"; exit 1; }
+usage() { echo "Usage: $0 GO_VERSION [DEBIAN_TAG]"; exit 1; }
 
 set -e
 
-export PROJECT="$1"
-export GO_VERSION="$2"
+export GO_VERSION="$1"
 export BUILD_TAG="$GO_VERSION"-`date +%Y-%m-%d_%H_%M`
-export DEBIAN_TAG="latest"
 
-if [ -z "$PROJECT" -o -z "$GO_VERSION" ]; then
+if [ -z "$GO_VERSION" -o "$#" -gt 2 ]; then
   usage
 fi
 
-envsubst < cloudbuild.yaml.in > cloudbuild.yaml
+if [ "$#" -eq 2 ]; then
+  export DEBIAN_TAG="$2"
+else
+  export DEBIAN_TAG="latest"
+fi
+
+envsubst '${GO_VERSION},${BUILD_TAG},${DEBIAN_TAG}' < cloudbuild.yaml.in > cloudbuild.yaml
 gcloud beta container builds submit --config=cloudbuild.yaml .
