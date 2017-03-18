@@ -16,7 +16,7 @@
 
 # go-build.sh runs Go build in the workspace.
 
-usage() { echo "Usage: $0 WORKSPACE"; exit 1; }
+usage() { echo "Usage: $0 <workspace_directory>"; exit 1; }
 
 set -e
 
@@ -49,7 +49,7 @@ mv /usr/local/bin/go-run.sh "${workspace}"/bin/
 mv /usr/local/bin/go-cloud-debug "${workspace}"/bin/
 mv "${staging}" "${workspace}"/app
 
-# Generate the final images in which the app runs.
+# Generate the final image in which the app runs.
 cat > Dockerfile <<EOF
 FROM gcr.io/google_appengine/debian8:$DEBIAN_TAG
 

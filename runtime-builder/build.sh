@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-usage() { echo "Usage: $0 GO_VERSION [DEBIAN_TAG]"; exit 1; }
+usage() { echo "Usage: $0 <go_version> <debian_tag>"; exit 1; }
 
 set -e
 
@@ -30,6 +30,8 @@ if [ "$#" -eq 2 ]; then
 else
   export DEBIAN_TAG="latest"
 fi
+
+echo "Building builder image BUILD_TAG=${BUILD_TAG}, DEBIAN_TAG=${DEBIAN_TAG}"
 
 envsubst '${GO_VERSION},${BUILD_TAG},${DEBIAN_TAG}' < cloudbuild.yaml.in > cloudbuild.yaml
 gcloud beta container builds submit --config=cloudbuild.yaml .
