@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/${PROJECT_ID}/go1-builder:${BUILD_TAG}',
+        '--build-arg', 'go_version=${GO_VERSION}',
+        '--build-arg', 'debian_tag=${DEBIAN_TAG}',
+        '--no-cache', '.']
+images: ['gcr.io/${PROJECT_ID}/go1-builder:${BUILD_TAG}']
