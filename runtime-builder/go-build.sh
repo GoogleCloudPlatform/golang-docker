@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-# go-build.sh runs Go build in the workspace.
+# go-build.sh builds the Go application in the given workspace directory and
+# generates a Dockerfile in that same directory.
 
 usage() { echo "Usage: $0 <workspace_directory>"; exit 1; }
 
@@ -39,19 +40,21 @@ cd "${workspace}"
 staging=$(mktemp -d staging.XXXX)
 find . -mindepth 1 -maxdepth 1 ! -name "${staging}" ! -name "$(basename $GOPATH)" -exec mv {} "${staging}"/ \;
 
-# Create a bin/ directory containing all the binaries we need in the final image
+# Create a bin/ directory containing all the binaries needed in the final image.
 mkdir bin
-cd "${staging}"
-go build -o "${workspace}"/bin/app -tags appenginevm
-cd "${workspace}"
-
 mv /usr/local/bin/go-run.sh "${workspace}"/bin/
 mv /usr/local/bin/go-cloud-debug "${workspace}"/bin/
+
+cd "${staging}"
+go build -o "${workspace}"/bin/app -tags appenginevm
+
+# Move application files into app subdirectory.
+cd "${workspace}"
 mv "${staging}" "${workspace}"/app
 
-# Generate the final image in which the app runs.
+# Generate application Dockerfile.
 cat > Dockerfile <<EOF
-FROM gcr.io/google_appengine/debian8:$DEBIAN_TAG
+FROM gcr.io/google_appengine/debian8:${DEBIAN_TAG}
 
 LABEL go_version="${GO_VERSION}"
 

@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Dockerfile that runs a App Engine flexible environment Go application.
+# Dockerfile for building a Go application and generating the corresponding
+# application Dockerfile for it.  It expects the following build-args:
+#   go_version - Go SDK version to be bundled in this image.
+#   debian_tag - DEBIAN tag for use when generating application Dockerfile.
+# When this builder image is run, it expects the application source files to be
+# mounted at /workspace.
+
 FROM gcr.io/google_appengine/debian8
 
 RUN apt-get update \
-    && apt-get install -y \
-       curl \
-       --no-install-recommends \
+    && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
 ARG go_version
@@ -38,6 +42,5 @@ COPY go-run.sh /usr/local/bin/
 RUN curl -sSL https://storage.googleapis.com/cloud-debugger/compute-go/go-cloud-debug -o /usr/local/bin/go-cloud-debug && \
     chmod 755 /usr/local/bin/go-cloud-debug
 
-# RUN_IMAGE is substituted by build.sh
 ENTRYPOINT ["go-build.sh"]
 CMD ["/workspace"]
