@@ -1,5 +1,5 @@
 steps:
-- name: 'gcr.io/${PROJECT_ID}/go1-builder:<BUILD_TAG>'
+- name: 'gcr.io/gcp-runtimes/go1-builder:1.8'
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', '$_OUTPUT_IMAGE', '.']
 images:
