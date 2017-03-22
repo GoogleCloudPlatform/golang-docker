@@ -14,24 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-usage() { echo "Usage: $0 <go_version> <debian_tag>"; exit 1; }
+# Build script to build the Go runtime builder image.
+# Required arguments:
+#   project - GCP project ID for image name.
+#   go_version - Go SDK version to bundle into image.
+#   debian_tag - Debian tag for application base image.
+
+usage() { echo "Usage: $0 <project> <go_version> <debian_tag>"; exit 1; }
 
 set -e
 
-export GO_VERSION="$1"
-export BUILD_TAG="$GO_VERSION"-`date +%Y-%m-%d_%H_%M`
-
-if [ -z "$GO_VERSION" -o "$#" -gt 2 ]; then
+if [ "$#" -ne 3 ]; then
   usage
 fi
 
-if [ "$#" -eq 2 ]; then
-  export DEBIAN_TAG="$2"
-else
-  export DEBIAN_TAG="latest"
-fi
+export PROJECT_ID="$1"
+export GO_VERSION="$2"
+export DEBIAN_TAG="$3"
+export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
 
-echo "Building builder image BUILD_TAG=${BUILD_TAG}, DEBIAN_TAG=${DEBIAN_TAG}"
+echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, DEBIAN_TAG=${DEBIAN_TAG}"
 
-envsubst '${GO_VERSION},${BUILD_TAG},${DEBIAN_TAG}' < cloudbuild.yaml.in > cloudbuild.yaml
-gcloud beta container builds submit --config=cloudbuild.yaml .
+gcloud beta container builds submit \
+  --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_DEBIAN_TAG=${DEBIAN_TAG}" \
+  --config=cloudbuild.yaml .
