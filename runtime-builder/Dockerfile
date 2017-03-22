@@ -16,8 +16,8 @@
 # application Dockerfile for it.  It expects the following build-args:
 #   go_version - Go SDK version to be bundled in this image.
 #   debian_tag - DEBIAN tag for use when generating application Dockerfile.
-# When this builder image is run, it expects the application source files to be
-# mounted at /workspace.
+# When this builder image is executed, it expects the application source files
+# to be mounted at /workspace.
 
 FROM gcr.io/google_appengine/debian8
 
