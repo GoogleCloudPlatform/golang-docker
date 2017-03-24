@@ -30,11 +30,14 @@ ARG debian_tag
 ENV GO_VERSION ${go_version}
 ENV DEBIAN_TAG ${debian_tag}
 
+# Copy checksum for use in validation.
+COPY checksums/go${GO_VERSION}.sha256 /tmp/
+
+# Download SDK and validate.
 RUN curl -sSL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
-    curl -sSL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz.sha256 -o /tmp/go.tar.gz.sha256 && \
-    echo "$(cat /tmp/go.tar.gz.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
+    echo "$(cat /tmp/go${GO_VERSION}.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -xzf /tmp/go.tar.gz && \
-    rm /tmp/go.tar.gz /tmp/go.tar.gz.sha256
+    rm /tmp/go.tar.gz /tmp/go${GO_VERSION}.sha256
 
 COPY go-build.sh /usr/local/bin/
 COPY go-run.sh /usr/local/bin/
