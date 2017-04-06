@@ -36,5 +36,6 @@ export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
 echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, DEBIAN_TAG=${DEBIAN_TAG}"
 
 gcloud beta container builds submit \
+  --project="${PROJECT_ID}" \
   --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_DEBIAN_TAG=${DEBIAN_TAG}" \
   --config=cloudbuild.yaml .

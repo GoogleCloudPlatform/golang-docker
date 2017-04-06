@@ -1,0 +1,29 @@
+schemaVersion: "1.0.0"
+
+fileExistenceTests:
+- name: 'Go SDK'
+  path: '/usr/local/go/'
+  isDirectory: true
+  shouldExist: true
+
+- name: 'Go Build Script'
+  path: '/usr/local/bin/go-build.sh'
+  isDirectory: false
+  shouldExist: true
+  permissions: '-rwxr-xr-x'
+
+- name: 'Go Run Script'
+  path: '/usr/local/bin/go-run.sh'
+  isDirectory: false
+  shouldExist: true
+  permissions: '-rwxr-xr-x'
+
+- name: 'Go Debugger Agent'
+  path: '/usr/local/bin/go-cloud-debug'
+  isDirectory: false
+  shouldExist: true
+  permissions: '-rwxr-xr-x'
+
+licenseTests:
+- debian: true
+  files: []
