@@ -2,6 +2,7 @@ sudo: required
 
 env:
   - IMAGE_NAME="golang:staging"
+    GO_VERSION="1.8"
 
 services:
 - docker
@@ -13,5 +14,7 @@ branches:
 script:
 - curl https://raw.githubusercontent.com/GoogleCloudPlatform/runtimes-common/master/structure_tests/ext_run.sh > ext_run.sh
 - chmod +x ext_run.sh
-- docker build -t "$IMAGE_NAME" -q base/
-- ./ext_run.sh -i "$IMAGE_NAME" -v --config test/test_config.yaml
+- docker build -t "${IMAGE_NAME}" -q base/
+- ./ext_run.sh -i "${IMAGE_NAME}" -v --config test/test_config.yaml
+- docker build -t "go1-builder:${GO_VERSION}" --build-arg go_version="${GO_VERSION}" --build-arg debian_tag="latest" -q runtime-builder/
+- ./ext_run.sh -i "go1-builder:${GO_VERSION}" -v --config runtime-builder/test_config.yaml
