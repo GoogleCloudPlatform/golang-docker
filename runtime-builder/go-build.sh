@@ -26,8 +26,8 @@ if [ -z "${workspace}" ]; then
     usage
 fi
 
-if [ -z "${GO_VERSION}" -o -z "${DEBIAN_TAG}" ]; then
-    echo "Missing env variable(s): GO_VERSION='${GO_VERSION}', DEBIAN_TAG='${DEBIAN_TAG}'."
+if [ -z "${GO_VERSION}" -o -z "${DEBIAN_DIGEST}" ]; then
+    echo "Missing env variable(s): GO_VERSION='${GO_VERSION}', DEBIAN_DIGEST='${DEBIAN_DIGEST}'."
     exit 1
 fi
 
@@ -54,7 +54,7 @@ mv "${staging}" "${workspace}"/app
 
 # Generate application Dockerfile.
 cat > Dockerfile <<EOF
-FROM gcr.io/google_appengine/debian8:${DEBIAN_TAG}
+FROM gcr.io/google_appengine/debian8@${DEBIAN_DIGEST}
 
 LABEL go_version="${GO_VERSION}"
 

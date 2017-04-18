@@ -18,24 +18,23 @@
 # Required arguments:
 #   project - GCP project ID for image name.
 #   go_version - Go SDK version to bundle into image.
-#   debian_tag - Debian tag for application base image.
 
-usage() { echo "Usage: $0 <project> <go_version> <debian_tag>"; exit 1; }
+usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 
 set -e
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 2 ]; then
   usage
 fi
 
 export PROJECT_ID="$1"
 export GO_VERSION="$2"
-export DEBIAN_TAG="$3"
+export DEBIAN_DIGEST=$(go run debian-digest.go)
 export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
 
-echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, DEBIAN_TAG=${DEBIAN_TAG}"
+echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, DEBIAN_DIGEST=${DEBIAN_DIGEST}"
 
 gcloud beta container builds submit \
   --project="${PROJECT_ID}" \
-  --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_DEBIAN_TAG=${DEBIAN_TAG}" \
+  --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_DEBIAN_DIGEST=${DEBIAN_DIGEST}" \
   --config=cloudbuild.yaml .
