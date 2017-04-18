@@ -19,9 +19,22 @@
 #   project - GCP project ID for image name.
 #   go_version - Go SDK version to bundle into image.
 
+set -e
+
 usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 
-set -e
+debian_digest ()
+{
+  local digest="$(gcloud beta container images describe gcr.io/google_appengine/debian8:latest | \
+    grep '^Image:' | cut -d'@' -f 2)"
+  local prefix="$(echo ${digest} | cut -d':' -f 1)"
+  local len="$(echo ${digest} | cut -d':' -f 2 | wc -c)"
+  if [ "${prefix}" != "sha256" -o "${len}" -ne 65 ]; then
+    echo "$0: malformed digest got: ${digest}"
+    exit 1
+  fi
+  export DEBIAN_DIGEST="${digest}"
+}
 
 if [ "$#" -ne 2 ]; then
   usage
@@ -29,8 +42,9 @@ fi
 
 export PROJECT_ID="$1"
 export GO_VERSION="$2"
-export DEBIAN_DIGEST=$(go run debian-digest.go)
 export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
+
+debian_digest
 
 echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, DEBIAN_DIGEST=${DEBIAN_DIGEST}"
 
