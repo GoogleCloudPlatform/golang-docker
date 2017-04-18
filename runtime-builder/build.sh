@@ -23,13 +23,13 @@ set -e
 
 usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 
-debian_digest ()
+debian_digest()
 {
   local digest="$(gcloud beta container images describe gcr.io/google_appengine/debian8:latest | \
-    grep '^Image:' | cut -d'@' -f 2)"
-  local prefix="$(echo ${digest} | cut -d':' -f 1)"
-  local len="$(echo ${digest} | cut -d':' -f 2 | wc -c)"
-  if [ "${prefix}" != "sha256" -o "${len}" -ne 65 ]; then
+    grep '^Image:' | cut -d'@' -f2 | grep '^sha256:')"
+
+  # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
+  if [[ "$(echo ${digest} | wc -c)" -ne 72 ]]; then
     echo "$0: malformed digest got: ${digest}"
     exit 1
   fi
