@@ -22,11 +22,11 @@ usage() { echo "Usage: $0 <workspace_directory>"; exit 1; }
 set -e
 
 workspace="$1"
-if [ -z "${workspace}" ]; then
+if [[ -z "${workspace}" ]]; then
     usage
 fi
 
-if [ -z "${GO_VERSION}" -o -z "${DEBIAN_DIGEST}" ]; then
+if [[ -z "${GO_VERSION}" -o -z "${DEBIAN_DIGEST}" ]]; then
     echo "Missing env variable(s): GO_VERSION='${GO_VERSION}', DEBIAN_DIGEST='${DEBIAN_DIGEST}'."
     exit 1
 fi

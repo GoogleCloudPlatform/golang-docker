@@ -30,13 +30,13 @@ debian_digest()
 
   # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
   if [[ "$(echo ${digest} | wc -c)" -ne 72 ]]; then
-    echo "$0: malformed digest got: ${digest}"
+    echo "$0: unable to parse digest of debian8 image: ${digest}"
     exit 1
   fi
   export DEBIAN_DIGEST="${digest}"
 }
 
-if [ "$#" -ne 2 ]; then
+if [[ "$#" -ne 2 ]]; then
   usage
 fi
 
