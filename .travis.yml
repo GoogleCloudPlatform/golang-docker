@@ -16,5 +16,5 @@ script:
 - chmod +x ext_run.sh
 - docker build -t "${IMAGE_NAME}" -q base/
 - ./ext_run.sh -i "${IMAGE_NAME}" -v --config test/test_config.yaml
-- docker build -t "go1-builder:${GO_VERSION}" --build-arg go_version="${GO_VERSION}" --build-arg debian_tag="latest" -q runtime-builder/
+- docker build -t "go1-builder:${GO_VERSION}" --build-arg go_version="${GO_VERSION}" -q runtime-builder/
 - ./ext_run.sh -i "go1-builder:${GO_VERSION}" -v --config runtime-builder/test_config.yaml

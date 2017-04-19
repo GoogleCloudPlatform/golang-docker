@@ -15,20 +15,20 @@
 # Dockerfile for building a Go application and generating the corresponding
 # application Dockerfile for it.  It expects the following build-args:
 #   go_version - Go SDK version to be bundled in this image.
-#   debian_tag - DEBIAN tag for use when generating application Dockerfile.
+#   debian_digest - DEBIAN digest for use when generating application Dockerfile.
 # When this builder image is executed, it expects the application source files
 # to be mounted at /workspace.
 
-FROM gcr.io/google_appengine/debian8
+FROM gcr.io/google_appengine/debian8:latest
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
 ARG go_version
-ARG debian_tag
+ARG debian_digest
 ENV GO_VERSION ${go_version}
-ENV DEBIAN_TAG ${debian_tag}
+ENV DEBIAN_DIGEST ${debian_digest}
 
 # Copy checksum for use in validation.
 COPY checksums/go${GO_VERSION}.sha256 /tmp/

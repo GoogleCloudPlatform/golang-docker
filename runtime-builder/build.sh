@@ -18,24 +18,37 @@
 # Required arguments:
 #   project - GCP project ID for image name.
 #   go_version - Go SDK version to bundle into image.
-#   debian_tag - Debian tag for application base image.
-
-usage() { echo "Usage: $0 <project> <go_version> <debian_tag>"; exit 1; }
 
 set -e
 
-if [ "$#" -ne 3 ]; then
+usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
+
+debian_digest()
+{
+  local digest="$(gcloud beta container images describe gcr.io/google_appengine/debian8:latest | \
+    grep '^Image:' | cut -d'@' -f2 | grep '^sha256:')"
+
+  # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
+  if [[ "$(echo ${digest} | wc -c)" -ne 72 ]]; then
+    echo "$0: unable to parse digest of debian8 image: ${digest}"
+    exit 1
+  fi
+  export DEBIAN_DIGEST="${digest}"
+}
+
+if [[ "$#" -ne 2 ]]; then
   usage
 fi
 
 export PROJECT_ID="$1"
 export GO_VERSION="$2"
-export DEBIAN_TAG="$3"
 export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
 
-echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, DEBIAN_TAG=${DEBIAN_TAG}"
+debian_digest
+
+echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, DEBIAN_DIGEST=${DEBIAN_DIGEST}"
 
 gcloud beta container builds submit \
   --project="${PROJECT_ID}" \
-  --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_DEBIAN_TAG=${DEBIAN_TAG}" \
+  --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_DEBIAN_DIGEST=${DEBIAN_DIGEST}" \
   --config=cloudbuild.yaml .

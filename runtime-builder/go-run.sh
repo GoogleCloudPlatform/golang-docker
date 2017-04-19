@@ -22,7 +22,7 @@ set -e -x
 goBin="$1"
 shift
 
-if [ -f "./source-context.json" ]; then
+if [[ -f "./source-context.json" ]]; then
     service="${GAE_SERVICE:-default}"
     version="${GAE_VERSION:-default}"
     set +e; go-cloud-debug \
@@ -31,7 +31,7 @@ if [ -f "./source-context.json" ]; then
         -appversion "${version}" \
         -- "$goBin" "$@"
     exitCode="$?"
-    if [ "$exitCode" -eq 103 ]; then
+    if [[ "$exitCode" -eq 103 ]]; then
         # Fallback to running the binary itself if it fails to get the application default credentials.
         exec "$goBin" "$@"
     else

@@ -2,7 +2,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/${_PROJECT_ID}/go1-builder:${_BUILD_TAG}',
         '--build-arg', 'go_version=${_GO_VERSION}',
-        '--build-arg', 'debian_tag=${_DEBIAN_TAG}',
+        '--build-arg', 'debian_digest=${_DEBIAN_DIGEST}',
         '--no-cache', '.']
 - name: 'gcr.io/gcp-runtimes/structure_test'
   args: ['--image', 'gcr.io/${_PROJECT_ID}/go1-builder:${_BUILD_TAG}',
