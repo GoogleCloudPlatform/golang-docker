@@ -25,7 +25,7 @@ usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 
 debian_digest()
 {
-  local digest="$(gcloud beta container images describe gcr.io/google_appengine/debian8:latest | \
+  local digest="$(gcloud beta container images describe gcr.io/google-appengine/debian8:latest | \
     grep '^Image:' | cut -d'@' -f2 | grep '^sha256:')"
 
   # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
