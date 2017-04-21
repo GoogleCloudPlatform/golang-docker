@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Dockerfile that runs a App Engine flexible environment Go application.
-FROM gcr.io/google_appengine/debian8
+FROM gcr.io/google-appengine/debian8
 
 RUN apt-get update \
     && apt-get install -y \
