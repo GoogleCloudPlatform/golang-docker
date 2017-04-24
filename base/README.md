@@ -1,6 +1,6 @@
-# gcr.io/google_appengine/golang
+# gcr.io/google-appengine/golang
 
-`gcr.io/google_appengine/golang` is a [docker](https://docker.io) base image
+`gcr.io/google-appengine/golang` is a [docker](https://docker.io) base image
 that bundles the latest version of [Go](http://golang.org) installed from
 [golang.org](http://golang.org/doc/install/).
 
@@ -20,7 +20,7 @@ provide your own Dockerfile in the same directory as the app.yaml file, like thi
 
 - Create a Dockerfile in your Go application directory with the following content:
 
-        FROM gcr.io/google_appengine/golang
+        FROM gcr.io/google-appengine/golang
 
         COPY . /go/src/app
         RUN go-wrapper install -tags appenginevm

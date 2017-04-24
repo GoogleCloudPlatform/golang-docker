@@ -19,7 +19,7 @@
 # When this builder image is executed, it expects the application source files
 # to be mounted at /workspace.
 
-FROM gcr.io/google_appengine/debian8:latest
+FROM gcr.io/google-appengine/debian8:latest
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
