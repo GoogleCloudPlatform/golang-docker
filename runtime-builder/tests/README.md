@@ -15,3 +15,7 @@ To run the test:
 * Build and submit the go1-builder image.
 * Config the local config go-\<version>.yaml file to point to the image submitted.
 * Run test.sh \<project_id>
+
+### Caveat
+Currently there is an issue with the authentication of the test framework.
+Affected tests are skipped until the fix made.
