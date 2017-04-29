@@ -2,20 +2,21 @@
 
 This directory defines tests for the Go runtime builder image.
 
-## Structrue Test
-The structure test runs after the image is built. It checks the environment setup and the file existence. Failing the structure test will also fail the whole submission.
-See the [structure tests README](https://github.com/GoogleCloudPlatform/runtimes-common/blob/master/structure_tests/README.md)
+## Structure Test
+The structure test is invoked in the cloud build steps after the builder image is built. It checks the environment setup and the existence of specific files in the image. Failing the structure test will also fail the whole submission.
+See the structure tests [README](https://github.com/GoogleCloudPlatform/runtimes-common/blob/master/structure_tests/README.md)
 for information on how to write tests.
 
 ## Integration Test
-The \/app directory contains an app to perform an end-to-end test on the runtime builder.
-It uses the same [integration test framework](https://github.com/GoogleCloudPlatform/runtimes-common/tree/master/integration_tests) designed for the current Go GCP image.
+The \/app directory contains a test web application for performing an end to end test.
+Refer to integration test framework [README](https://github.com/GoogleCloudPlatform/runtimes-common/tree/master/integration_tests) for the design and requirements.
 
-To run the test:
-* Build and submit the go1-builder image.
-* Config the local config go-\<version>.yaml file to point to the image submitted.
-* Run test.sh \<project_id>
+To perform the test:
+* Manually run a container build of the go1-builder image. Skip this step if you already have an existing image in GCR that you want to test.
+* Configure a cloudbuild.yaml file that references the go1-builder image to be tested. See go-1.8.yaml for an example.
+* Run test.sh \<project_id>. This will use the configured cloudbuild.yaml to build and deploy the test app. It will also invoke the test driver to perform the test suite to verify that it is working.
 
 ### Caveat
-Currently there is an issue with the authentication of the test framework.
+There is an issue with the authentication of the test framework.
+The test robot of the cloud container build system doesn't have the correct authentication to read the monitoring metrics or log entries.
 Affected tests are skipped until the fix made.

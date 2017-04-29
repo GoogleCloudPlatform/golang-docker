@@ -45,19 +45,34 @@ func (h appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 var (
-	ctx       = context.Background()
 	projectID string
+	lgClient  *logging.Client
+	mtClient  *monitoring.MetricClient
+	errClient *errors.Client
 )
 
 func main() {
+	var err error
 	if metadata.OnGCE() {
-		var err error
 		if projectID, err = metadata.ProjectID(); err != nil {
 			log.Fatal("getting project ID on GCE:", err)
 		}
 	} else {
 		projectID = os.Getenv("PROJECT_ID")
 	}
+
+	// Initialize Stackdriver API clients
+	ctx := context.Background()
+	if lgClient, err = logging.NewClient(ctx, projectID); err != nil {
+		log.Fatalf("failed to create logging client: %v", err)
+	}
+	if mtClient, err = monitoring.NewMetricClient(ctx); err != nil {
+		log.Fatalf("failed to create metric client: %v", err)
+	}
+	if errClient, err = errors.NewClient(ctx, projectID, "default", "", false); err != nil {
+		log.Fatalf("failed to create error reporting client: %v", err)
+	}
+
 	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/version", versionHandler)
@@ -81,7 +96,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "ok")
+	fmt.Fprint(w, "OK")
 }
 
 func versionHandler(w http.ResponseWriter, r *http.Request) {
@@ -98,11 +113,9 @@ func lookupHostHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func loggingHandler(w http.ResponseWriter, r *http.Request) error {
-	c, err := logging.NewClient(ctx, projectID)
-	if err != nil {
-		return fmt.Errorf("failed to create logging client: %v", err)
+	if r.Method != http.MethodPost {
+		return fmt.Errorf("wrong request method: %v, requires POST", r.Method)
 	}
-
 	decoder := json.NewDecoder(r.Body)
 	var b struct {
 		LogName string `json:"log_name"`
@@ -111,19 +124,16 @@ func loggingHandler(w http.ResponseWriter, r *http.Request) error {
 	if err := decoder.Decode(&b); err != nil {
 		return fmt.Errorf("decode request body: %v", err)
 	}
-	defer r.Body.Close()
+	r.Body.Close()
 
-	lg := c.Logger(b.LogName)
-	lg.LogSync(ctx, logging.Entry{Payload: b.Token})
-	return nil
+	lg := lgClient.Logger(b.LogName)
+	return lg.LogSync(r.Context(), logging.Entry{Payload: b.Token})
 }
 
 func standardLoggingHandler(w http.ResponseWriter, r *http.Request) error {
-	c, err := logging.NewClient(ctx, projectID)
-	if err != nil {
-		return fmt.Errorf("failed to create logging client: %v", err)
+	if r.Method != http.MethodPost {
+		return fmt.Errorf("wrong request method: %v, requires POST", r.Method)
 	}
-
 	decoder := json.NewDecoder(r.Body)
 	var b struct {
 		Token string `json:"token"`
@@ -132,20 +142,18 @@ func standardLoggingHandler(w http.ResponseWriter, r *http.Request) error {
 	if err := decoder.Decode(&b); err != nil {
 		return fmt.Errorf("decode request body: %v", err)
 	}
-	defer r.Body.Close()
+	r.Body.Close()
 
-	lg := c.Logger("appengine.googleapis.com/stderr")
+	lg := lgClient.Logger("appengine.googleapis.com/stderr")
 	slg := lg.StandardLogger(logging.ParseSeverity(b.Level))
 	slg.Println(b.Token)
 	return nil
 }
 
 func customLoggingHandler(w http.ResponseWriter, r *http.Request) error {
-	c, err := logging.NewClient(ctx, projectID)
-	if err != nil {
-		return fmt.Errorf("failed to create logging client: %v", err)
+	if r.Method != http.MethodPost {
+		return fmt.Errorf("wrong request method: %v, requires POST", r.Method)
 	}
-
 	decoder := json.NewDecoder(r.Body)
 	var b struct {
 		LogName string `json:"log_name"`
@@ -155,20 +163,18 @@ func customLoggingHandler(w http.ResponseWriter, r *http.Request) error {
 	if err := decoder.Decode(&b); err != nil {
 		return fmt.Errorf("decode request body: %v", err)
 	}
-	defer r.Body.Close()
+	r.Body.Close()
 
-	lg := c.Logger(b.LogName)
+	lg := lgClient.Logger(b.LogName)
 	slg := lg.StandardLogger(logging.ParseSeverity(b.Level))
 	slg.Println(b.Token)
 	return nil
 }
 
 func monitoringHandler(w http.ResponseWriter, r *http.Request) error {
-	c, err := monitoring.NewMetricClient(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to create metric client: %v", err)
+	if r.Method != http.MethodPost {
+		return fmt.Errorf("wrong request method: %v, requires POST", r.Method)
 	}
-
 	decoder := json.NewDecoder(r.Body)
 	var b struct {
 		Name  string `json:"name"`
@@ -177,7 +183,7 @@ func monitoringHandler(w http.ResponseWriter, r *http.Request) error {
 	if err := decoder.Decode(&b); err != nil {
 		return fmt.Errorf("decode request body: %v", err)
 	}
-	defer r.Body.Close()
+	r.Body.Close()
 
 	p := &monitoringpb.Point{
 		Interval: &monitoringpb.TimeInterval{
@@ -192,7 +198,7 @@ func monitoringHandler(w http.ResponseWriter, r *http.Request) error {
 		},
 	}
 
-	if err := c.CreateTimeSeries(ctx, &monitoringpb.CreateTimeSeriesRequest{
+	if err := mtClient.CreateTimeSeries(r.Context(), &monitoringpb.CreateTimeSeriesRequest{
 		Name: monitoring.MetricProjectPath(projectID),
 		TimeSeries: []*monitoringpb.TimeSeries{
 			{
@@ -214,14 +220,13 @@ func monitoringHandler(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("writing time series data: %v", err)
 	}
 
-	_, err = fmt.Fprint(w, "ok")
+	_, err := fmt.Fprint(w, "OK")
 	return err
 }
 
 func exceptionHandler(w http.ResponseWriter, r *http.Request) error {
-	c, err := errors.NewClient(ctx, projectID, "default", "", false)
-	if err != nil {
-		return fmt.Errorf("failed to create error reporting client: %v", err)
+	if r.Method != http.MethodPost {
+		return fmt.Errorf("wrong request method: %v, requires POST", r.Method)
 	}
 	decoder := json.NewDecoder(r.Body)
 	var b struct {
@@ -230,28 +235,26 @@ func exceptionHandler(w http.ResponseWriter, r *http.Request) error {
 	if err := decoder.Decode(&b); err != nil {
 		return fmt.Errorf("decode request body: %v", err)
 	}
-	defer r.Body.Close()
+	r.Body.Close()
 
-	c.Report(ctx, r, b.Token)
-	_, err = fmt.Fprint(w, "ok")
+	errClient.Report(r.Context(), r, b.Token)
+	_, err := fmt.Fprint(w, "OK")
 	return err
 }
 
 func customHandler(w http.ResponseWriter, r *http.Request) error {
 	var tests = []struct {
-		Name    string `json:"name"`
-		Path    string `json:"path"`
-		Timeout int    `json:"timeout"`
+		Name    string `json:"name,omitempty"`
+		Path    string `json:"path,omitempty"`
+		Timeout int    `json:"timeout,omitempty"`
 	}{
 		{
-			Name:    "Version",
-			Path:    "/version",
-			Timeout: 500,
+			Name: "Version",
+			Path: "/version",
 		},
 		{
-			Name:    "Lookup Host",
-			Path:    "/lookup_host",
-			Timeout: 500,
+			Name: "Lookup Host",
+			Path: "/lookup_host",
 		},
 	}
 	return json.NewEncoder(w).Encode(tests)
