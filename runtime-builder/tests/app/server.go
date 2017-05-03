@@ -77,8 +77,6 @@ func main() {
 	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/version", versionHandler)
 	http.Handle("/lookup_host", appHandler(lookupHostHandler))
-	http.Handle("/logging", appHandler(loggingHandler))
-	http.Handle("/logging_standard", appHandler(standardLoggingHandler))
 	http.Handle("/logging_custom", appHandler(customLoggingHandler))
 	http.Handle("/monitoring", appHandler(monitoringHandler))
 	http.Handle("/exception", appHandler(exceptionHandler))
@@ -109,44 +107,6 @@ func lookupHostHandler(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("error lookup host: %v", err)
 	}
 	fmt.Fprint(w, strings.Join(addrs, "\n"))
-	return nil
-}
-
-func loggingHandler(w http.ResponseWriter, r *http.Request) error {
-	if r.Method != http.MethodPost {
-		return fmt.Errorf("wrong request method: %v, requires POST", r.Method)
-	}
-	decoder := json.NewDecoder(r.Body)
-	var b struct {
-		LogName string `json:"log_name"`
-		Token   string `json:"token"`
-	}
-	if err := decoder.Decode(&b); err != nil {
-		return fmt.Errorf("decode request body: %v", err)
-	}
-	r.Body.Close()
-
-	lg := lgClient.Logger(b.LogName)
-	return lg.LogSync(r.Context(), logging.Entry{Payload: b.Token})
-}
-
-func standardLoggingHandler(w http.ResponseWriter, r *http.Request) error {
-	if r.Method != http.MethodPost {
-		return fmt.Errorf("wrong request method: %v, requires POST", r.Method)
-	}
-	decoder := json.NewDecoder(r.Body)
-	var b struct {
-		Token string `json:"token"`
-		Level string `json:"level"`
-	}
-	if err := decoder.Decode(&b); err != nil {
-		return fmt.Errorf("decode request body: %v", err)
-	}
-	r.Body.Close()
-
-	lg := lgClient.Logger("appengine.googleapis.com/stderr")
-	slg := lg.StandardLogger(logging.ParseSeverity(b.Level))
-	slg.Println(b.Token)
 	return nil
 }
 

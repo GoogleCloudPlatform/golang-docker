@@ -4,5 +4,6 @@ steps:
     '--no-deploy',
     '--url', 'https://$PROJECT_ID.appspot.com',
     '--skip-monitoring-tests',
-    '--skip-logging-tests'
+    '--skip-standard-logging-tests',
+    '--skip-custom-logging-tests'
   ]
