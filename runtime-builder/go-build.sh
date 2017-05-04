@@ -14,17 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-# go-build.sh builds the Go application in the given workspace directory and
+# go-build.sh builds the Go application in the current work directory and
 # generates a Dockerfile in that same directory.
-
-usage() { echo "Usage: $0 <workspace_directory>"; exit 1; }
 
 set -e
 
-workspace="$1"
-if [[ -z "${workspace}" ]]; then
-    usage
-fi
+workspace="$(pwd -P)"
 
 if [[ -z "${GO_VERSION}" || -z "${DEBIAN_DIGEST}" ]]; then
     echo "Missing env variable(s): GO_VERSION='${GO_VERSION}', DEBIAN_DIGEST='${DEBIAN_DIGEST}'."
@@ -33,8 +28,6 @@ fi
 
 export PATH=/usr/local/go/bin:"${PATH}"
 export GOPATH="${workspace}"/_gopath
-
-cd "${workspace}"
 
 # Move application files into a temporary staging directory, dependencies excluded.
 staging=$(mktemp -d staging.XXXX)

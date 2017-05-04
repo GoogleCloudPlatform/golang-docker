@@ -17,7 +17,7 @@
 #   go_version - Go SDK version to be bundled in this image.
 #   debian_digest - DEBIAN digest for use when generating application Dockerfile.
 # When this builder image is executed, it expects the application source files
-# to be mounted at /workspace.
+# to be mounted at the current work directory.
 
 FROM gcr.io/google-appengine/debian8:latest
 
@@ -47,4 +47,3 @@ RUN curl -sSL https://storage.googleapis.com/cloud-debugger/compute-go/go-cloud-
     chmod 755 /usr/local/bin/go-cloud-debug
 
 ENTRYPOINT ["go-build.sh"]
-CMD ["/workspace"]
