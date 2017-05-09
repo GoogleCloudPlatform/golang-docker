@@ -51,6 +51,8 @@ var (
 	errClient *errors.Client
 )
 
+// The server command is a sample app that talks to various Stackdriver APIs.
+// This app is used as a post-push verification for the runtime builder.
 func main() {
 	var err error
 	if metadata.OnGCE() {
