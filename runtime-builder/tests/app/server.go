@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// The server command is a sample app that talks to various Stackdriver APIs.
+// This app is used as a post-push verification for the runtime builder.
 package main
 
 import (
@@ -51,8 +53,6 @@ var (
 	errClient *errors.Client
 )
 
-// The server command is a sample app that talks to various Stackdriver APIs.
-// This app is used as a post-push verification for the runtime builder.
 func main() {
 	var err error
 	if metadata.OnGCE() {
