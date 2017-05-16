@@ -39,7 +39,7 @@ mv /usr/local/bin/go-run.sh "${workspace}"/bin/
 mv /usr/local/bin/go-cloud-debug "${workspace}"/bin/
 
 cd "${staging}"
-go build -o "${workspace}"/bin/app -tags appenginevm
+CGO_ENABLED=0 go build -ldflags "-s" -a -installsuffix cgo -o "${workspace}"/bin/app -tags appenginevm
 
 # Move application files into app subdirectory.
 cd "${workspace}"
