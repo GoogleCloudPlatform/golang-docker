@@ -40,10 +40,6 @@ RUN curl -sSL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.
     rm /tmp/go.tar.gz /tmp/go${GO_VERSION}.sha256
 
 COPY go-build.sh /usr/local/bin/
-COPY go-run.sh /usr/local/bin/
-RUN chmod 755 /usr/local/bin/go-build.sh /usr/local/bin/go-run.sh
-
-RUN curl -sSL https://storage.googleapis.com/cloud-debugger/compute-go/go-cloud-debug -o /usr/local/bin/go-cloud-debug && \
-    chmod 755 /usr/local/bin/go-cloud-debug
+RUN chmod 755 /usr/local/bin/go-build.sh
 
 ENTRYPOINT ["go-build.sh"]

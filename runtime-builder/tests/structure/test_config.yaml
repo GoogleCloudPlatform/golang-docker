@@ -12,18 +12,6 @@ fileExistenceTests:
   shouldExist: true
   permissions: '-rwxr-xr-x'
 
-- name: 'Go Run Script'
-  path: '/usr/local/bin/go-run.sh'
-  isDirectory: false
-  shouldExist: true
-  permissions: '-rwxr-xr-x'
-
-- name: 'Go Debugger Agent'
-  path: '/usr/local/bin/go-cloud-debug'
-  isDirectory: false
-  shouldExist: true
-  permissions: '-rwxr-xr-x'
-
 licenseTests:
 - debian: true
   files: []

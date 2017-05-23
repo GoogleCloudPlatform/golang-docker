@@ -35,9 +35,6 @@ find . -mindepth 1 -maxdepth 1 ! -name "${staging}" ! -name "$(basename $GOPATH)
 
 # Create a bin/ directory containing all the binaries needed in the final image.
 mkdir bin
-mv /usr/local/bin/go-run.sh "${workspace}"/bin/
-mv /usr/local/bin/go-cloud-debug "${workspace}"/bin/
-
 cd "${staging}"
 go build -o "${workspace}"/bin/app -tags appenginevm
 
@@ -55,5 +52,5 @@ COPY bin/ /usr/local/bin/
 COPY app/ /app/
 
 WORKDIR /app
-ENTRYPOINT ["go-run.sh", "/usr/local/bin/app"]
+ENTRYPOINT ["/usr/local/bin/app"]
 EOF
