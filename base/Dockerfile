@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Dockerfile that runs a App Engine flexible environment Go application.
-FROM gcr.io/google-appengine/debian8
+FROM gcr.io/google-appengine/debian8:latest
 
 RUN apt-get update \
     && apt-get install -y \
@@ -21,10 +21,10 @@ RUN apt-get update \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GO_VERSION 1.8
+ENV GO_VERSION 1.8.3
 
 RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
-    CHECKSUM=53ab94104ee3923e228a2cb2116e5e462ad3ebaeea06ff04463479d7f12d27ca && \
+    CHECKSUM=1862f4c3d3907e59b04a757cfda0ea7aa9ef39274af99a784f5be843c80c6772 && \
     echo "${CHECKSUM}  /tmp/go.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -vxzf /tmp/go.tar.gz && \
     rm /tmp/go.tar.gz
