@@ -25,6 +25,7 @@ usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 
 debian_digest()
 {
+  # We sometimes have issue with 'describe', use the --log-http flag to get more info if it fails.
   local digest="$(gcloud container images describe gcr.io/google-appengine/debian8:latest | \
     grep '^Image:' | cut -d'@' -f2 | grep '^sha256:')"
 
