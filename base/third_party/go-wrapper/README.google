@@ -6,5 +6,4 @@ Description:
 The go-wrapper bash script from the Docker Official Image for Go.
 
 Local Modifications:
-If Stackdriver Debugger is enabled, go-wrapper will also start the debugger agent with the app
-in the "run" command.
+No modifications.
