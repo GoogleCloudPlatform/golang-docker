@@ -21,7 +21,7 @@ sed -i "s,^\(FROM.*\),\\1:$BASE_TAG," base/Dockerfile
 RUNTIME_NAME="golang"
 
 if [ -z "${TAG}" ]; then
-  TAG=`date +%Y-%m-%d_%H_%M`
+  export TAG=`date +%Y-%m-%d_%H_%M`
 fi
 
 CANDIDATE_NAME="${TAG}"
