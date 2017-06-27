@@ -1,0 +1,16 @@
+FROM ${STAGING_IMAGE}
+
+RUN apt-get update && apt-get install -y git
+
+RUN go get \
+	cloud.google.com/go/compute/metadata \
+	cloud.google.com/go/errors \
+	cloud.google.com/go/logging \
+	cloud.google.com/go/monitoring/apiv3 \
+	github.com/golang/protobuf/ptypes/timestamp \
+	google.golang.org/genproto/googleapis/api/metric \
+	google.golang.org/genproto/googleapis/api/monitoredres \
+	google.golang.org/genproto/googleapis/monitoring/v3
+
+COPY server.go /
+ENTRYPOINT ["go", "run", "/server.go"]
