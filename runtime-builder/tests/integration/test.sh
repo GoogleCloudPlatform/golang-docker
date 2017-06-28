@@ -34,5 +34,7 @@ if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
     exit 1
 fi
 
-gcloud beta app deploy --project="${PROJECT}" app.yaml
+export GOPATH=$(pwd)
+
+gcloud beta app deploy --project="${PROJECT}" src/app/app.yaml
 gcloud container builds submit --project="${PROJECT}" --config=test.yaml .
