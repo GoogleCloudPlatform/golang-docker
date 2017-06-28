@@ -13,8 +13,8 @@ Refer to integration test framework [README](https://github.com/GoogleCloudPlatf
 
 To perform the test:
 * Manually run a container build of the go1-builder image. Skip this step if you already have an existing image in GCR that you want to test.
-* Configure a cloudbuild.yaml file that references the go1-builder image to be tested. See go-1.8.yaml for an example.
-* Run test.sh \<project_id>. This will use the configured cloudbuild.yaml to build and deploy the test app. It will also invoke the test driver to perform the test suite to verify that it is working.
+* Set `app/runtime_builders_root` to the integration/ directory.
+* Run test.sh \<project_id>. This will use the configured go-test.yaml to build and deploy the test app. It will also invoke the test driver to perform the test suite to verify that it is working.
 
 ### Caveat
 There is an issue with the authentication of the test framework.
