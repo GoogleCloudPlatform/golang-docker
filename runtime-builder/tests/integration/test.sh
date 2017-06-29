@@ -27,12 +27,15 @@ if [[ -z "${PROJECT}" ]]; then
 fi
 
 # Check if the config file is set to the proper local path
-use_rb="$(gcloud config -q get-value app/use_runtime_builders)"
-rb_root="$(gcloud config -q get-value app/runtime_builders_root)"
+use_rb="$(gcloud config get-value app/use_runtime_builders)"
+rb_root="$(gcloud config get-value app/runtime_builders_root)"
 if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
     echo "Wrong gcloud config found for app/use_runtime_builders or app/runtime_builders_root."
     exit 1
 fi
 
-gcloud beta app deploy --project="${PROJECT}" app.yaml
+export GOPATH=$(dirname $0)
+
+echo "Deploying test app using config in ${rb_root}/runtimes.yaml"
+gcloud beta app deploy -q --project="${PROJECT}" src/app/app.yaml
 gcloud container builds submit --project="${PROJECT}" --config=test.yaml .
