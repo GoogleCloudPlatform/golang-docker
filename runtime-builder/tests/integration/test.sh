@@ -34,8 +34,7 @@ if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
     exit 1
 fi
 
-cd $(dirname $0)
-export GOPATH=$(pwd -P)
+export GOPATH=$(dirname $0)
 
 echo "Deploying test app using config in ${rb_root}/runtimes.yaml"
 gcloud beta app deploy -q --project="${PROJECT}" src/app/app.yaml
