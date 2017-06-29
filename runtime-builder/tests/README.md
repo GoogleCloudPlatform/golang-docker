@@ -11,6 +11,10 @@ for information on how to write tests.
 The \/integration directory contains a test web application for performing an end to end test.
 Refer to integration test framework [README](https://github.com/GoogleCloudPlatform/runtimes-common/tree/master/integration_tests) for the design and requirements. The directory serves as a GOPATH. It also includes all the dependencies for it to be used by the test container. A go-test.yaml is provided as the cloudbuild.yaml for deploying the app and it points to the staging go1-builder image. Every newly built image will have the "staging" tag.
 
+To update the dependencies:
+* Set the GOPATH to the integration/ directory.
+* Run `go get -d app/... -tags appenginevm`
+
 To perform the test:
 * Manually run a container build of the go1-builder image. Skip this step if you already have an existing image in GCR that you want to test.
 * Set `gcloud config set app/use_runtime_builders true`
