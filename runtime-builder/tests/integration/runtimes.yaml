@@ -1,6 +1,0 @@
-schema_version: 1
-
-runtimes:
-  go:
-    target:
-      file: go-test.yaml
