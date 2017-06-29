@@ -13,7 +13,7 @@ Refer to integration test framework [README](https://github.com/GoogleCloudPlatf
 
 To update the dependencies:
 * Set the GOPATH to the integration/ directory.
-* Run `go get app/... -tags appenginevm`
+* Run `go get -d app/... -tags appenginevm`
 
 To perform the test:
 * Manually run a container build of the go1-builder image. Skip this step if you already have an existing image in GCR that you want to test.
