@@ -1,6 +1,9 @@
 steps:
-- name: 'gcr.io/${PROJECT_ID}/go1-builder:staging'
-- name: 'gcr.io/cloud-builders/docker:latest'
-  args: ['build', '-t', '$_OUTPUT_IMAGE', '.']
-images:
-- '$_OUTPUT_IMAGE'
+- name: gcr.io/gcp-runtimes/integration_test
+  args: [
+    '--no-deploy',
+    '--url', 'https://$PROJECT_ID.appspot.com',
+    '--skip-monitoring-tests',
+    '--skip-standard-logging-tests',
+    '--skip-custom-logging-tests'
+  ]

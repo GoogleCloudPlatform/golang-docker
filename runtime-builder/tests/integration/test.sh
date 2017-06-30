@@ -34,9 +34,12 @@ if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
     exit 1
 fi
 
+: ${STAGING_BUILDER_IMAGE?"Staging builder image path not set."}
+envsubst < test.yaml.in > test.yaml
+
 cd $(dirname $0)
 export GOPATH=$(pwd -P)
 
 echo "Deploying test app using config in ${rb_root}/runtimes.yaml"
 gcloud beta app deploy -q --project="${PROJECT}" src/app/app.yaml
-gcloud container builds submit --project="${PROJECT}" --config=test.yaml .
+gcloud container builds submit --project="${PROJECT}" --config=go-test.yaml .

@@ -1,9 +1,6 @@
 steps:
-- name: gcr.io/gcp-runtimes/integration_test
-  args: [
-    '--no-deploy',
-    '--url', 'https://$PROJECT_ID.appspot.com',
-    '--skip-monitoring-tests',
-    '--skip-standard-logging-tests',
-    '--skip-custom-logging-tests'
-  ]
+- name: 'gcr.io/gcp-runtimes/go1-builder:latest'
+- name: 'gcr.io/cloud-builders/docker:latest'
+  args: ['build', '-t', '', '.']
+images:
+- ''
