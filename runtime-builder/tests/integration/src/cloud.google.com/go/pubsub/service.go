@@ -386,7 +386,7 @@ func (p *streamingPuller) openLocked() {
 	// No opens in flight; start one.
 	p.inFlight = true
 	p.c.L.Unlock()
-	spc, err := p.subc.StreamingPull(p.ctx)
+	spc, err := p.subc.StreamingPull(p.ctx, gax.WithGRPCOptions(grpc.MaxCallRecvMsgSize(maxSendRecvBytes)))
 	if err == nil {
 		err = spc.Send(&pb.StreamingPullRequest{
 			Subscription:             p.subName,
@@ -488,8 +488,8 @@ func (p *streamingPuller) send(req *pb.StreamingPullRequest) error {
 func (p *streamingPuller) closeSend() {
 	p.mu.Lock()
 	p.closed = true
-	p.mu.Unlock()
 	p.spc.CloseSend()
+	p.mu.Unlock()
 }
 
 // Split req into a prefix that is smaller than maxSize, and a remainder.
