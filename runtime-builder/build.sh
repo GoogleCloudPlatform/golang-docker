@@ -53,3 +53,6 @@ gcloud container builds submit \
   --project="${PROJECT_ID}" \
   --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_DEBIAN_DIGEST=${DEBIAN_DIGEST}" \
   --config=cloudbuild.yaml .
+
+# Tagging the builder with 'staging' for test purpose
+gcloud container images add-tag -q "gcr.io/${PROJECT_ID}/go1-builder:${BUILD_TAG}" "gcr.io/${PROJECT_ID}/go1-builder:staging"
