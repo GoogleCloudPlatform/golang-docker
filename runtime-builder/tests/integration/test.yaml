@@ -1,6 +1,0 @@
-steps:
-- name: 'gcr.io/gcp-runtimes/go1-builder:latest'
-- name: 'gcr.io/cloud-builders/docker:latest'
-  args: ['build', '-t', '', '.']
-images:
-- ''
