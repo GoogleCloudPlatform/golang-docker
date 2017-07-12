@@ -34,7 +34,8 @@ if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
     exit 1
 fi
 
-: ${STAGING_BUILDER_IMAGE?"Staging builder image path not set."}
+: ${TAG?"Staging builder image tag not set."}
+STAGING_BUILDER_IMAGE=gcr.io/gcp-runtimes/go1-builder:${TAG}
 envsubst < test.yaml.in > test.yaml
 
 cd $(dirname $0)
