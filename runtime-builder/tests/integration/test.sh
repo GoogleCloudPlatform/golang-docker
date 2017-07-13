@@ -15,9 +15,8 @@
 # limitations under the License.
 
 # test.sh deploys the test app and run the integration test on it.
-# usage: test.sh <project_id>
 
-usage() { echo "Usage: $0 <project_id> <builder_image_tag>"; exit 1; }
+usage() { echo "Usage: $0 <project_id> [builder_image_tag]"; exit 1; }
 
 set -e
 

@@ -15,7 +15,8 @@ To perform the test:
 * Manually run a container build of the go1-builder image. Skip this step if you already have an existing image in GCR that you want to test.
 * Set `gcloud config set app/use_runtime_builders true`
 * Set `gcloud config set app/runtime_builders_root` to the integration/ directory.
-* Run test.sh \<project_id>. This will use the configured test.yaml to build and deploy the test app. It will also invoke the test driver to perform the test suite to verify that it is working.
+* Run test.sh \<project_id>. This will use the generated test.yaml to build and deploy the test app. It will also invoke the test driver to perform the test suite to verify that it is working.
+* Optionally pass in the builder image tag name as the second parameter to use a different builder image (default tag is "staging").
 
 ### Caveat
 There is an issue with the authentication of the test framework.
