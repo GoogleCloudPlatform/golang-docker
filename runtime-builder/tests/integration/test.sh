@@ -17,7 +17,7 @@
 # test.sh deploys the test app and run the integration test on it.
 # usage: test.sh <project_id>
 
-usage() { echo "Usage: $0 <project_id>"; exit 1; }
+usage() { echo "Usage: $0 <project_id> <builder_image_tag>"; exit 1; }
 
 set -e
 
@@ -25,6 +25,13 @@ PROJECT="$1"
 if [[ -z "${PROJECT}" ]]; then
     usage
 fi
+
+TAG="$2"
+if [[ -z "${TAG}" ]]; then
+	TAG="staging"
+fi
+
+export STAGING_BUILDER_IMAGE=gcr.io/gcp-runtimes/go1-builder:${TAG}
 
 # Check if the config file is set to the proper local path
 use_rb="$(gcloud config get-value app/use_runtime_builders)"
@@ -34,8 +41,6 @@ if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
     exit 1
 fi
 
-: ${TAG?"Staging builder image tag not set."}
-STAGING_BUILDER_IMAGE=gcr.io/gcp-runtimes/go1-builder:${TAG}
 envsubst < test.yaml.in > test.yaml
 
 cd $(dirname $0)
