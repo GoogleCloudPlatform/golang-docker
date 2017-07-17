@@ -26,13 +26,12 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"time"
 
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/errors"
 	"cloud.google.com/go/logging"
 	monitoring "cloud.google.com/go/monitoring/apiv3"
-	"github.com/golang/protobuf/ptypes/timestamp"
+	"github.com/golang/protobuf/ptypes"
 	metricpb "google.golang.org/genproto/googleapis/api/metric"
 	monitoredrespb "google.golang.org/genproto/googleapis/api/monitoredres"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
@@ -149,9 +148,7 @@ func monitoringHandler(w http.ResponseWriter, r *http.Request) error {
 
 	p := &monitoringpb.Point{
 		Interval: &monitoringpb.TimeInterval{
-			EndTime: &timestamp.Timestamp{
-				Seconds: time.Now().Unix(),
-			},
+			EndTime: ptypes.TimestampNow(),
 		},
 		Value: &monitoringpb.TypedValue{
 			Value: &monitoringpb.TypedValue_Int64Value{
