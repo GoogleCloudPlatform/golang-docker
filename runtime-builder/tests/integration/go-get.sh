@@ -11,7 +11,11 @@ cd src/app
 deps=$(go list -f '{{ join .Deps "\n" }}' -tags appenginevm)
 
 echo "Fetching dependencies..."
-go get -u -v -d -tags appenginevm
+if [[ $(git symbolic-ref --short HEAD) == "master" ]]; then
+    go get -u -v -d -tags appenginevm
+else
+    go get -v -d -tags appenginevm
+fi
 
 echo "Copying dependencies..."
 if [[ "$(uname -s)" == "Darwin" ]]; then
