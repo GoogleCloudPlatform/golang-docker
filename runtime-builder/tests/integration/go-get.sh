@@ -8,35 +8,23 @@ new_gopath=$(pwd -P)
 echo "Cleaning up dependencies..."
 find src/ -maxdepth 1 -mindepth 1 ! -name 'app'  -type d | xargs rm -rf
 cd src/app
-deps=$(go list -f '{{ join .Deps "\n" }}' -tags appenginevm)
+export GOPATH="$(pwd -P)/$(mktemp -d gopath.XXX)"
 
 echo "Fetching dependencies..."
-if [[ $(git symbolic-ref --short HEAD) == "master" ]]; then
-    go get -u -v -d -tags appenginevm
-else
-    go get -v -d -tags appenginevm
-fi
+go get -v -d -tags appenginevm
+deps=$(go list -f '{{ join .Deps "\n" }}' -tags appenginevm)
 
 echo "Copying dependencies..."
-if [[ "$(uname -s)" == "Darwin" ]]; then
-    for pkg in ${deps}
-    do
-        d="${GOPATH}/src/${pkg}"
-        # copy non-std dependencies to the new gopath
-        if [[ -d "${d}" ]]; then
-            ditto -v "${d}" "${new_gopath}/src/${pkg}"
-        fi
-    done
-elif [[ "$(uname -s)" == "Linux" ]]; then
-    cd "${GOPATH}"/src
-    for pkg in ${deps}
-    do
-        # copy non-std dependencies to the new gopath
-        if [[ -d "${pkg}" ]]; then
-            cp -Rv --parents "${pkg}" "${new_gopath}"/src
-        fi
-    done
-fi
+for pkg in ${deps}
+do
+    d="${GOPATH}/src/${pkg}"
+    # copy non-std dependencies to the new gopath
+    if [[ -d "${d}" ]]; then
+        mkdir -p "${new_gopath}/src/${pkg}"
+        set +e; cp -v "${GOPATH}/src/${pkg}"/* "${new_gopath}/src/${pkg}/"
+    fi
+done
 
+rm -rf "${GOPATH}"
 cd "${new_gopath}"
 find . -name .git -type d | xargs rm -rf
