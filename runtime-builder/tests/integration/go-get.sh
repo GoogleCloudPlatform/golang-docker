@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-export GOPATH="/tmp/$(mktemp -d gopath.XXX)"
+export GOPATH="$(mktemp -d /tmp/gopath.XXX)"
 cd $(dirname $0)
 new_gopath=$(pwd -P)
 
@@ -21,10 +21,17 @@ do
     # copy non-std dependencies to the new gopath
     if [[ -d "${d}" ]]; then
         mkdir -p "${new_gopath}/src/${pkg}"
-        set +e; cp -v "${GOPATH}/src/${pkg}"/* "${new_gopath}/src/${pkg}/"
+        set +e; cp -v "${GOPATH}/src/${pkg}"/*.go "${new_gopath}/src/${pkg}/"
     fi
 done
 
-rm -rf "${GOPATH}"
+echo "Copying license files"
+cd "${GOPATH}"
+for license in `find . -name LICENSE`
+do
+    set +e; cp -v "${license}" "${new_gopath}/${license}"
+done
+
+# rm -rf "${GOPATH}"
 cd "${new_gopath}"
 find . -name .git -type d | xargs rm -rf
