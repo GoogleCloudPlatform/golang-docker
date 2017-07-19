@@ -28,11 +28,11 @@ done
 echo "Copying license files..."
 cd "${GOPATH}"
 # We assume all license files are named "LICENSE" since we import Google packages only.
-for license in `find . -name LICENSE`
+for license in $(find . -name LICENSE)
 do
     set +e; cp -v "${license}" "${new_gopath}/${license}"
 done
 
-# rm -rf "${GOPATH}"
+rm -rf "${GOPATH}"
 cd "${new_gopath}"
-find . -name .git -type d | xargs rm -rf
+find . -name .git -type d | xargs rm -rf # avoid checking in git submodule
