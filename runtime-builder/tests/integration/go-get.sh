@@ -2,15 +2,15 @@
 
 set -euo pipefail
 
+export GOPATH="/tmp/$(mktemp -d gopath.XXX)"
 cd $(dirname $0)
 new_gopath=$(pwd -P)
 
 echo "Cleaning up dependencies..."
 find src/ -maxdepth 1 -mindepth 1 ! -name 'app'  -type d | xargs rm -rf
-cd src/app
-export GOPATH="$(pwd -P)/$(mktemp -d gopath.XXX)"
 
 echo "Fetching dependencies..."
+cd src/app
 go get -v -d -tags appenginevm
 deps=$(go list -f '{{ join .Deps "\n" }}' -tags appenginevm)
 
