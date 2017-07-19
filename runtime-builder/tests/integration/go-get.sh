@@ -25,8 +25,9 @@ do
     fi
 done
 
-echo "Copying license files"
+echo "Copying license files..."
 cd "${GOPATH}"
+# We assume all license files are named "LICENSE" since we import Google packages only.
 for license in `find . -name LICENSE`
 do
     set +e; cp -v "${license}" "${new_gopath}/${license}"
