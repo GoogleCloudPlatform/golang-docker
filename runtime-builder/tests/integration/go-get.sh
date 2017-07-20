@@ -1,42 +1,38 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
+export GOPATH="$(mktemp -d /tmp/gopath.XXX)"
 cd $(dirname $0)
 new_gopath=$(pwd -P)
 
 echo "Cleaning up dependencies..."
 find src/ -maxdepth 1 -mindepth 1 ! -name 'app'  -type d | xargs rm -rf
-cd src/app
-deps=$(go list -f '{{ join .Deps "\n" }}' -tags appenginevm)
 
 echo "Fetching dependencies..."
-if [[ $(git symbolic-ref --short HEAD) == "master" ]]; then
-    go get -u -v -d -tags appenginevm
-else
-    go get -v -d -tags appenginevm
-fi
+cd src/app
+go get -v -d -tags appenginevm
+deps=$(go list -f '{{ join .Deps "\n" }}' -tags appenginevm)
 
 echo "Copying dependencies..."
-if [[ "$(uname -s)" == "Darwin" ]]; then
-    for pkg in ${deps}
-    do
-        d="${GOPATH}/src/${pkg}"
-        # copy non-std dependencies to the new gopath
-        if [[ -d "${d}" ]]; then
-            ditto -v "${d}" "${new_gopath}/src/${pkg}"
-        fi
-    done
-elif [[ "$(uname -s)" == "Linux" ]]; then
-    cd "${GOPATH}"/src
-    for pkg in ${deps}
-    do
-        # copy non-std dependencies to the new gopath
-        if [[ -d "${pkg}" ]]; then
-            cp -Rv --parents "${pkg}" "${new_gopath}"/src
-        fi
-    done
-fi
+for pkg in ${deps}
+do
+    d="${GOPATH}/src/${pkg}"
+    # copy non-std dependencies to the new gopath
+    if [[ -d "${d}" ]]; then
+        mkdir -p "${new_gopath}/src/${pkg}"
+        set +e; cp -v "${GOPATH}/src/${pkg}"/*.go "${new_gopath}/src/${pkg}/"
+    fi
+done
 
+echo "Copying license files..."
+cd "${GOPATH}"
+# We assume all license files are named "LICENSE" since we import Google packages only.
+for license in $(find . -name LICENSE)
+do
+    set +e; cp -v "${license}" "${new_gopath}/${license}"
+done
+
+rm -rf "${GOPATH}"
 cd "${new_gopath}"
-find . -name .git -type d | xargs rm -rf
+find . -name .git -type d | xargs rm -rf # avoid checking in git submodule
