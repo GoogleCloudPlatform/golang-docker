@@ -44,8 +44,9 @@ mv "${staging}" "${workspace}"/app
 
 # Generate application Dockerfile.
 cat > Dockerfile <<EOF
-FROM gcr.io/google-appengine/debian8@${DEBIAN_DIGEST}
+FROM gcr.io/distroless/base:latest
 
+LABEL debian_digest="${DEBIAN_DIGEST}"
 LABEL go_version="${GO_VERSION}"
 
 COPY bin/ /usr/local/bin/
