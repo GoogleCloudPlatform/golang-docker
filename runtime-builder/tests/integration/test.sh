@@ -30,7 +30,8 @@ if [[ -z "${TAG}" ]]; then
 	TAG="staging"
 fi
 
-export STAGING_BUILDER_IMAGE=gcr.io/gcp-runtimes/go1-builder:${TAG}
+export STAGING_BUILDER_IMAGE="gcr.io/gcp-runtimes/go1-builder:${TAG}"
+export OUTPUT_IMAGE="\$_OUTPUT_IMAGE"
 
 # Check if the config file is set to the proper local path
 use_rb="$(gcloud config get-value app/use_runtime_builders)"

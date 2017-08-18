@@ -4,7 +4,8 @@ steps:
     'build', 
     '-t', 'gcr.io/${_PROJECT_ID}/go1-builder:${_BUILD_TAG}',
     '--build-arg', 'go_version=${_GO_VERSION}',
-    '--build-arg', 'debian_digest=${_DEBIAN_DIGEST}',
+    '--build-arg', 'base_digest=${_BASE_DIGEST}',
+    '--build-arg', 'build_tag=${_BUILD_TAG}',
     '--no-cache',
     '.'
   ]

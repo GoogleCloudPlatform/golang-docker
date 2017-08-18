@@ -23,10 +23,10 @@ set -e
 
 usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 
-debian_digest()
+base_digest()
 {
   # We sometimes have issue with 'describe', use the --log-http flag to get more info if it fails.
-  local digest="$(gcloud container images describe gcr.io/google-appengine/debian8:latest | \
+  local digest="$(gcloud alpha container images describe gcr.io/google-appengine/debian8:latest | \
     grep '^Image:' | cut -d'@' -f2 | grep '^sha256:')"
 
   # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
@@ -34,7 +34,7 @@ debian_digest()
     echo "$0: unable to parse digest of debian8 image: ${digest}"
     exit 1
   fi
-  export DEBIAN_DIGEST="${digest}"
+  export BASE_DIGEST="${digest}"
 }
 
 if [[ "$#" -ne 2 ]]; then
@@ -45,13 +45,13 @@ export PROJECT_ID="$1"
 export GO_VERSION="$2"
 export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
 
-debian_digest
+base_digest
 
-echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, DEBIAN_DIGEST=${DEBIAN_DIGEST}"
+echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, BASE_DIGEST=${BASE_DIGEST}"
 
 gcloud container builds submit \
   --project="${PROJECT_ID}" \
-  --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_DEBIAN_DIGEST=${DEBIAN_DIGEST}" \
+  --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_BASE_DIGEST=${BASE_DIGEST}" \
   --config=cloudbuild.yaml .
 
 # Tagging the builder with 'staging' for test purpose

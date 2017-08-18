@@ -21,8 +21,8 @@ set -e
 
 workspace="$(pwd -P)"
 
-if [[ -z "${GO_VERSION}" || -z "${DEBIAN_DIGEST}" ]]; then
-    echo "Missing env variable(s): GO_VERSION='${GO_VERSION}', DEBIAN_DIGEST='${DEBIAN_DIGEST}'."
+if [[ -z "${GO_VERSION}" || -z "${BASE_DIGEST}" || -z "${BUILD_TAG}" ]]; then
+    echo "Missing env variable(s): GO_VERSION='${GO_VERSION}', BASE_DIGEST='${BASE_DIGEST}', BUILD_TAG='${BUILD_TAG}'."
     exit 1
 fi
 
@@ -44,8 +44,9 @@ mv "${staging}" "${workspace}"/app
 
 # Generate application Dockerfile.
 cat > Dockerfile <<EOF
-FROM gcr.io/google-appengine/debian8@${DEBIAN_DIGEST}
+FROM gcr.io/distroless/base@${BASE_DIGEST}
 
+LABEL build_tag="${BUILD_TAG}"
 LABEL go_version="${GO_VERSION}"
 
 COPY bin/ /usr/local/bin/
