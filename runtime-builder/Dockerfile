@@ -15,7 +15,7 @@
 # Dockerfile for building a Go application and generating the corresponding
 # application Dockerfile for it.  It expects the following build-args:
 #   go_version - Go SDK version to be bundled in this image.
-#   debian_digest - DEBIAN digest for use when generating application Dockerfile.
+#   base_digest - DEBIAN digest for use when generating application Dockerfile.
 # When this builder image is executed, it expects the application source files
 # to be mounted at the current work directory.
 
@@ -26,9 +26,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 ARG go_version
-ARG debian_digest
+ARG base_digest
+ARG build_tag
 ENV GO_VERSION ${go_version}
-ENV DEBIAN_DIGEST ${debian_digest}
+ENV BASE_DIGEST ${base_digest}
+ENV BUILD_TAG ${build_tag}
 
 # Copy checksum for use in validation.
 COPY checksums/go${GO_VERSION}.sha256 /tmp/
