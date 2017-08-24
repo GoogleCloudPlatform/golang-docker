@@ -16,7 +16,7 @@
 
 # test.sh deploys the test app and run the integration test on it.
 
-usage() { echo "Usage: $0 <project_id> [builder_image_tag]"; exit 1; }
+usage() { echo "Usage: $0 <project_id> [builder_image_tag | builder_image_url]"; exit 1; }
 
 set -e
 
@@ -25,12 +25,13 @@ if [[ -z "${PROJECT}" ]]; then
     usage
 fi
 
-TAG="$2"
-if [[ -z "${TAG}" ]]; then
-	TAG="staging"
+if [[ "$2" =~ ^gcr.io/ ]]; then
+    export STAGING_BUILDER_IMAGE="$2"
+else
+    TAG="${2:-staging}"
+    export STAGING_BUILDER_IMAGE="gcr.io/gcp-runtimes/go1-builder:${TAG}"
 fi
 
-export STAGING_BUILDER_IMAGE="gcr.io/gcp-runtimes/go1-builder:${TAG}"
 export OUTPUT_IMAGE="\$_OUTPUT_IMAGE"
 
 # Check if the config file is set to the proper local path
