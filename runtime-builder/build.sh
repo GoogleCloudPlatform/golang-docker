@@ -26,12 +26,12 @@ usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 base_digest()
 {
   # We sometimes have issue with 'describe', use the --log-http flag to get more info if it fails.
-  local digest="$(gcloud alpha container images describe gcr.io/google-appengine/debian8:latest | \
+  local digest="$(gcloud alpha container images describe gcr.io/distroless/base:latest | \
     grep '^Image:' | cut -d'@' -f2 | grep '^sha256:')"
 
   # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
   if [[ "$(echo ${digest} | wc -c)" -ne 72 ]]; then
-    echo "$0: unable to parse digest of debian8 image: ${digest}"
+    echo "$0: unable to parse digest of base image: ${digest}"
     exit 1
   fi
   export BASE_DIGEST="${digest}"
@@ -54,5 +54,5 @@ gcloud container builds submit \
   --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_BASE_DIGEST=${BASE_DIGEST}" \
   --config=cloudbuild.yaml .
 
-# Tagging the builder with 'staging' for test purpose
+# Tagging the builder with 'staging' for integration test
 gcloud container images add-tag -q "gcr.io/${PROJECT_ID}/go1-builder:${BUILD_TAG}" "gcr.io/${PROJECT_ID}/go1-builder:staging"
