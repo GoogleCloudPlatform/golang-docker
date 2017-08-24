@@ -25,13 +25,15 @@ usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 
 base_digest()
 {
-  # We sometimes have issue with 'describe', use the --log-http flag to get more info if it fails.
+  # Note 'describe' needs different permission than 'list-tags', etc, if we have issue with
+  # it, use the --log-http flag to get more info if it fails.
+  # 'describe' is rolled back to alpha since Cloud SDK v166.0.0.
   local digest="$(gcloud alpha container images describe gcr.io/distroless/base:latest | \
     grep '^Image:' | cut -d'@' -f2 | grep '^sha256:')"
 
   # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
   if [[ "$(echo ${digest} | wc -c)" -ne 72 ]]; then
-    echo "$0: unable to parse digest of base image: ${digest}"
+    echo "$0: unable to parse digest of distroless/base image: ${digest}"
     exit 1
   fi
   export BASE_DIGEST="${digest}"
@@ -54,5 +56,5 @@ gcloud container builds submit \
   --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_BASE_DIGEST=${BASE_DIGEST}" \
   --config=cloudbuild.yaml .
 
-# Tagging the builder with 'staging' for integration test
+# Tagging the builder with 'staging' for integration test.
 gcloud container images add-tag -q "gcr.io/${PROJECT_ID}/go1-builder:${BUILD_TAG}" "gcr.io/${PROJECT_ID}/go1-builder:staging"

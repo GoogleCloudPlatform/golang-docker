@@ -25,13 +25,10 @@ if [[ -z "${PROJECT}" ]]; then
     usage
 fi
 
-if [[ -n "$2" && "$2" =~ ^gcr.io/ ]]; then
+if [[ "$2" =~ ^gcr.io/ ]]; then
     export STAGING_BUILDER_IMAGE="$2"
 else
-    TAG="$2"
-    if [[ -z "${TAG}" ]]; then
-        TAG="staging"
-    fi
+    TAG="${2:-staging}"
     export STAGING_BUILDER_IMAGE="gcr.io/gcp-runtimes/go1-builder:${TAG}"
 fi
 
