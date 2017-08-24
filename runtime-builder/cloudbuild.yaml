@@ -9,6 +9,9 @@ steps:
     '--no-cache',
     '.'
   ]
+  volumes:
+  - name: 'staging'
+    path: /staging
 
 - name: 'gcr.io/gcp-runtimes/structure_test'
   args: [
@@ -16,5 +19,8 @@ steps:
     '-v',
     '--config', '/workspace/tests/structure/test_config.yaml'
   ]
+  volumes:
+  - name: 'staging'
+    path: /staging
 
 images: ['gcr.io/${_PROJECT_ID}/go1-builder:${_BUILD_TAG}']

@@ -30,8 +30,8 @@ export PATH=/usr/local/go/bin:"${PATH}"
 export GOPATH="${workspace}"/_gopath
 
 # Move application files into a temporary staging directory, dependencies excluded.
-staging=$(mktemp -d staging.XXXX)
-find . -mindepth 1 -maxdepth 1 ! -name "${staging}" ! -name "$(basename $GOPATH)" -exec mv {} "${staging}"/ \;
+staging="/staging"
+find . -mindepth 1 -maxdepth 1 ! -name "$(basename $GOPATH)" -exec mv {} "${staging}"/ \;
 
 # Create a bin/ directory containing all the binaries needed in the final image.
 mkdir bin
