@@ -16,7 +16,7 @@
 
 # test.sh deploys the test app and run the integration test on it.
 
-usage() { echo "Usage: $0 <project_id> [builder_image_tag | builder_image_url]"; exit 1; }
+usage() { echo "Usage: $0 <project_id> [builder_tag]"; exit 1; }
 
 set -e
 
@@ -25,16 +25,13 @@ if [[ -z "${PROJECT}" ]]; then
     usage
 fi
 
-if [[ "$2" =~ ^gcr.io/ ]]; then
-    export STAGING_BUILDER_IMAGE="$2"
-else
-    TAG="${2:-staging}"
-    export STAGING_BUILDER_IMAGE="gcr.io/gcp-runtimes/go1-builder:${TAG}"
-fi
+# Use staging tag if builder_tag argument is not set since latest build
+# will always be tagged with 'staging'.
+TAG="${2:-staging}"
+STAGING_BUILDER_IMAGE="gcr.io/${PROJECT}/go1-builder:${TAG}"
+echo "Builder image: ${STAGING_BUILDER_IMAGE}"
 
-export OUTPUT_IMAGE="\$_OUTPUT_IMAGE"
-
-# Check if the config file is set to the proper local path
+# Make sure gcloud is configured to use the local directory.
 use_rb="$(gcloud config get-value app/use_runtime_builders)"
 rb_root="$(gcloud config get-value app/runtime_builders_root)"
 if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
@@ -42,7 +39,9 @@ if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
     exit 1
 fi
 
-envsubst < test.yaml.in > test.yaml
+# Generate test.yaml from test.yaml.in by substituting STAGING_BUILDER_IMAGE variable.
+# test.yaml is referenced in runtimes.yaml as the cloudbuild.yaml file.
+sed "s|\${STAGING_BUILDER_IMAGE}|${STAGING_BUILDER_IMAGE}|" test.yaml.in > test.yaml
 
 cd $(dirname $0)
 export GOPATH=$(pwd -P)
