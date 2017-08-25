@@ -35,9 +35,9 @@ To perform the test:
 
 Usage:
 ```
-test.sh <project_id> [builder_image_tag]
+test.sh <project_id> [builder_tag]
 ```
-* `builder_image_tag` is optional. Default value is 'staging' because that tag
+* `builder_tag` is optional. Default value is 'staging' because that tag
   is applied during the build process.
 
 ### Caveat

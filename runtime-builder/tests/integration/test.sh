@@ -16,7 +16,7 @@
 
 # test.sh deploys the test app and run the integration test on it.
 
-usage() { echo "Usage: $0 <project_id> [builder_image_tag]"; exit 1; }
+usage() { echo "Usage: $0 <project_id> [builder_tag]"; exit 1; }
 
 set -e
 
@@ -25,7 +25,7 @@ if [[ -z "${PROJECT}" ]]; then
     usage
 fi
 
-# Use staging tag if builder_image_tag argument is not set since latest build
+# Use staging tag if builder_tag argument is not set since latest build
 # will always be tagged with 'staging'.
 TAG="${2:-staging}"
 STAGING_BUILDER_IMAGE="gcr.io/${PROJECT}/go1-builder:${TAG}"
