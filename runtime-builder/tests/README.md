@@ -35,10 +35,11 @@ To perform the test:
 
 Usage:
 ```
-test.sh <project_id> [builder_tag]
+test.sh <project_id> [builder_image_url]
 ```
-* `builder_tag` is optional. Default value is 'staging' because that tag
-  is applied during the build process.
+* `builder_image_url` is optional. Default value is
+  'gcr.io/${project_id}/go1-builder:staging' because the 'staging' tag is
+  applied during the build process.
 
 ### Caveat
 There is an issue with the authentication of the test framework.  The test

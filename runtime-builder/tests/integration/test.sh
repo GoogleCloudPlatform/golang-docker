@@ -16,7 +16,7 @@
 
 # test.sh deploys the test app and run the integration test on it.
 
-usage() { echo "Usage: $0 <project_id> <builder_image_url>"; exit 1; }
+usage() { echo "Usage: $0 <project_id> [builder_image_url]"; exit 1; }
 
 set -e
 
@@ -25,10 +25,9 @@ if [[ -z "${PROJECT}" ]]; then
     usage
 fi
 
-STAGING_BUILDER_IMAGE="$2"
-if [[ -z "${STAGING_BUILDER_IMAGE}" ]]; then
-    usage
-fi
+# If builder_image_url parameter is not set, default to project's go1-builder
+# staging image.
+STAGING_BUILDER_IMAGE=${2:-gcr.io/${PROJECT}/go1-builder:staging}
 echo "Builder image: ${STAGING_BUILDER_IMAGE}"
 
 # Make sure gcloud is configured to use the local directory.
