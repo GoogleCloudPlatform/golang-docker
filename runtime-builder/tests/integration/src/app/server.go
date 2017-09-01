@@ -26,6 +26,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/errors"
@@ -77,6 +78,7 @@ func main() {
 	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/version", versionHandler)
+	http.Handle("/tzinfo", appHandler(tzinfoHandler))
 	http.Handle("/lookup_host", appHandler(lookupHostHandler))
 	http.Handle("/logging_custom", appHandler(customLoggingHandler))
 	http.Handle("/monitoring", appHandler(monitoringHandler))
@@ -100,6 +102,15 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 
 func versionHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Go version=%s\nGOARCH=%s\nGOOS=%s\n", runtime.Version(), runtime.GOARCH, runtime.GOOS)
+}
+
+func tzinfoHandler(w http.ResponseWriter, r *http.Request) error {
+	loc, err := time.LoadLocation("US/Pacific")
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(w, loc.String())
+	return nil
 }
 
 func lookupHostHandler(w http.ResponseWriter, r *http.Request) error {
@@ -214,6 +225,10 @@ func customHandler(w http.ResponseWriter, r *http.Request) error {
 		{
 			Name: "Lookup Host",
 			Path: "/lookup_host",
+		},
+		{
+			Name: "TimeZone",
+			Path: "/tzinfo",
 		},
 	}
 	return json.NewEncoder(w).Encode(tests)
