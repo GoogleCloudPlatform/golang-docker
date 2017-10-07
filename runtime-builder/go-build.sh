@@ -42,9 +42,6 @@ go build -o "${workspace}"/bin/app -tags appenginevm
 cd "${workspace}"
 mv "${staging}" "${workspace}"/app
 
-# Copy zoneinfo directory into workspace in order to be placed into final image.
-cp -p -R /usr/share/zoneinfo "${workspace}"/zoneinfo
-
 # Generate application Dockerfile.
 cat > Dockerfile <<EOF
 FROM gcr.io/distroless/base@${BASE_DIGEST}
@@ -54,7 +51,6 @@ LABEL go_version="${GO_VERSION}"
 
 COPY bin/ /usr/local/bin/
 COPY app/ /app/
-COPY zoneinfo/ /usr/share/zoneinfo/
 
 WORKDIR /app
 ENTRYPOINT ["/usr/local/bin/app"]
