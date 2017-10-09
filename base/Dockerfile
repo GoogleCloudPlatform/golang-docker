@@ -21,10 +21,10 @@ RUN apt-get update \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GO_VERSION 1.8.3
+ENV GO_VERSION 1.8.4
 
 RUN curl -sSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
-    CHECKSUM=1862f4c3d3907e59b04a757cfda0ea7aa9ef39274af99a784f5be843c80c6772 && \
+    CHECKSUM=0ef737a0aff9742af0f63ac13c97ce36f0bbc8b67385169e41e395f34170944f && \
     echo "${CHECKSUM}  /tmp/go.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -vxzf /tmp/go.tar.gz && \
     rm /tmp/go.tar.gz
