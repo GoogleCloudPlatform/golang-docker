@@ -29,18 +29,45 @@ fi
 export PATH=/usr/local/go/bin:"${PATH}"
 export GOPATH="${workspace}"/_gopath
 
-# Move application files into a temporary staging directory, dependencies excluded.
-staging=$(mktemp -d staging.XXXX)
-find . -mindepth 1 -maxdepth 1 ! -name "${staging}" ! -name "$(basename $GOPATH)" -exec mv {} "${staging}"/ \;
+# $workspace contains files and directories in original app.yaml directory. It
+# consists of the main package files as well as application resource files.
+# If there are dependency packages, $workspace will also contain _gopath
+# directory containing these with the proper GOPATH structure.
+
+
+# If there is _gopath/main-package-path file, reconstruct the main path relative
+# to GOPATH/src by moving files over.
+mainpath=""
+if [[ -f "${GOPATH}/main-package-path" ]]; then
+  mainpkg=$(cat ${GOPATH}/main-package-path)
+  if [[ "$mainpkg" != "" ]]; then
+    mainpath="${GOPATH}/src/${mainpkg}"
+    mkdir -p "${mainpath}"
+    for f in $(find . -mindepth 1 -maxdepth 1 ! -name "$(basename $GOPATH)")
+    do
+      rm -rf ${mainpath}/${f}
+      mv ${f} ${mainpath}/${f}
+    done
+  fi
+fi
+
+# If not, construct a temporary staging directory.  This is to avoid naming
+# collisions in ${workspace}.
+if [[ "$mainpath" = "" ]]; then
+  mainpath=$(mktemp -d staging.XXXX)
+  find . -mindepth 1 -maxdepth 1 ! -name "${mainpath}" ! -name "$(basename $GOPATH)" -exec mv {} "${mainpath}"/ \;
+fi
 
 # Create a bin/ directory containing all the binaries needed in the final image.
 mkdir bin
-cd "${staging}"
+
+# Run the build.
+cd "${mainpath}"
 go build -o "${workspace}"/bin/app -tags appenginevm
 
 # Move application files into app subdirectory.
 cd "${workspace}"
-mv "${staging}" "${workspace}"/app
+mv "${mainpath}" "${workspace}"/app
 
 # Generate application Dockerfile.
 cat > Dockerfile <<EOF
