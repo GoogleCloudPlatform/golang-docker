@@ -27,9 +27,9 @@ base_digest()
 {
   # Note 'describe' needs different permission than 'list-tags', etc, if we have issue with
   # it, use the --log-http flag to get more info if it fails.
-  # 'describe' is rolled back to alpha since Cloud SDK v166.0.0.
-  local digest="$(gcloud alpha container images describe gcr.io/distroless/base:latest | \
-    grep '^Image:' | cut -d'@' -f2 | grep '^sha256:')"
+  # 'describe' requires Cloud SDK v175.0.0.
+  local digest="$(gcloud container images describe gcr.io/distroless/base:latest \
+    --format='value(image_summary.digest)' | grep '^sha256:')"
 
   # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
   if [[ "$(echo ${digest} | wc -c)" -ne 72 ]]; then
