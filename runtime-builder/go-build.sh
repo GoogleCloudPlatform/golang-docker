@@ -39,7 +39,7 @@ export GOPATH="${workspace}"/_gopath
 # to GOPATH/src by moving files over.
 mainpath=""
 if [[ -f "${GOPATH}/main-package-path" ]]; then
-  mainpkg=$(cat ${GOPATH}/main-package-path)
+  mainpkg=$(cat "${GOPATH}/main-package-path")
   if [[ "$mainpkg" != "" ]]; then
     mainpath="${GOPATH}/src/${mainpkg}"
     mkdir -p "${mainpath}"
