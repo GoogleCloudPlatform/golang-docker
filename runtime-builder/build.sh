@@ -28,12 +28,12 @@ base_digest()
   # Note 'describe' needs different permission than 'list-tags', etc, if we have issue with
   # it, use the --log-http flag to get more info if it fails.
   # 'describe' requires Cloud SDK v175.0.0.
-  local digest="$(gcloud container images describe gcr.io/distroless/base:latest \
-    --format='value(image_summary.digest)' | grep '^sha256:')"
+  base_image="gcr.io/distroless/base:latest"
+  local digest="$(gcloud container images describe ${base_image} --format='value(image_summary.digest)')"
 
   # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
-  if [[ "$(echo ${digest} | wc -c)" -ne 72 ]]; then
-    echo "$0: unable to parse digest of distroless/base image: ${digest}"
+  if [[ -z "digest" ]]; then
+    echo "$0: no digest found for ${base_image}"
     exit 1
   fi
   export BASE_DIGEST="${digest}"
