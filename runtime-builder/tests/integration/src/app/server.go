@@ -19,17 +19,19 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
 	"cloud.google.com/go/compute/metadata"
-	"cloud.google.com/go/errors"
+	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
 	monitoring "cloud.google.com/go/monitoring/apiv3"
 	"github.com/golang/protobuf/ptypes"
@@ -50,7 +52,7 @@ var (
 	projectID string
 	lgClient  *logging.Client
 	mtClient  *monitoring.MetricClient
-	errClient *errors.Client
+	errClient *errorreporting.Client
 )
 
 func main() {
@@ -71,7 +73,9 @@ func main() {
 	if mtClient, err = monitoring.NewMetricClient(ctx); err != nil {
 		log.Fatalf("failed to create metric client: %v", err)
 	}
-	if errClient, err = errors.NewClient(ctx, projectID, "default", "", false); err != nil {
+	if errClient, err = errorreporting.NewClient(ctx, projectID, errorreporting.Config{
+		ServiceName: "default",
+	}); err != nil {
 		log.Fatalf("failed to create error reporting client: %v", err)
 	}
 
@@ -207,7 +211,9 @@ func exceptionHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	r.Body.Close()
 
-	errClient.Report(r.Context(), r, b.Token)
+	errClient.ReportSync(r.Context(), errorreporting.Entry{
+		Error: errors.New(strconv.FormatInt(b.Token, 10)),
+	})
 	_, err := fmt.Fprint(w, "OK")
 	return err
 }
