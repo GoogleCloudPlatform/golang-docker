@@ -28,7 +28,7 @@ do
 done
 
 echo "Copying license files..."
-cd "${GOPATH}"
+cd "${GOPATH}/src"
 # Assume all license files are named "LICENSE" since we import Google packages
 # only. If this is not the case in the future, we should change this logic.
 for license in $(find . -name LICENSE)
