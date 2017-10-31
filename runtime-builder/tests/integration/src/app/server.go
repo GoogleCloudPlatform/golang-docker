@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"app/internal/foo"
+
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
@@ -88,6 +90,7 @@ func main() {
 	http.Handle("/monitoring", appHandler(monitoringHandler))
 	http.Handle("/exception", appHandler(exceptionHandler))
 	http.Handle("/custom", appHandler(customHandler))
+	http.Handle("/ping_foo", appHandler(pingFooHandler))
 	log.Print("Listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -236,6 +239,15 @@ func customHandler(w http.ResponseWriter, r *http.Request) error {
 			Name: "TimeZone",
 			Path: "/tzinfo",
 		},
+		{
+			Name: "Ping Foo",
+			Path: "/ping_foo",
+		},
 	}
 	return json.NewEncoder(w).Encode(tests)
+}
+
+func pingFooHandler(w http.ResponseWriter, r *http.Request) error {
+	_, err := fmt.Fprint(w, foo.Ping())
+	return err
 }
