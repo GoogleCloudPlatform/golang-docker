@@ -45,7 +45,11 @@ fi
 
 export PROJECT_ID="$1"
 export GO_VERSION="$2"
-export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
+if [ -n "${TAG}" ]; then
+  export BUILD_TAG = ${TAG}
+else
+  export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
+fi
 
 base_digest
 
