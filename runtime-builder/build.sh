@@ -46,7 +46,7 @@ fi
 export PROJECT_ID="$1"
 export GO_VERSION="$2"
 if [ -n "${TAG}" ]; then
-  export BUILD_TAG = ${TAG}
+  export BUILD_TAG="${TAG}"
 else
   export BUILD_TAG="${GO_VERSION}"-$(date +%Y%m%d_%H%M)
 fi
