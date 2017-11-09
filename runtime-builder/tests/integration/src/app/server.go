@@ -42,6 +42,14 @@ import (
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
 
+const (
+	// envVM is set in App Engine when vm:true is set.
+	envVM = "GAE_APPENGINE_HOSTNAME"
+
+	// envFlex is set in App Engine when env:flex is set.
+	envFlex = "GAE_INSTANCE"
+)
+
 type appHandler func(http.ResponseWriter, *http.Request) error
 
 func (h appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -91,6 +99,7 @@ func main() {
 	http.Handle("/exception", appHandler(exceptionHandler))
 	http.Handle("/custom", appHandler(customHandler))
 	http.Handle("/ping_foo", appHandler(pingFooHandler))
+	http.Handle("/environment", appHandler(environmentHandler))
 	log.Print("Listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -250,4 +259,11 @@ func customHandler(w http.ResponseWriter, r *http.Request) error {
 func pingFooHandler(w http.ResponseWriter, r *http.Request) error {
 	_, err := fmt.Fprint(w, foo.Ping())
 	return err
+}
+
+func environmentHandler(w http.ResponseWriter, r *http.Request) error {
+	if os.Getenv(envFlex) != "" || os.Getenv(envVM) != "" {
+		fmt.Fprintln(w, "GAE")
+	}
+	return nil
 }
