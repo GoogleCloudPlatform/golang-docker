@@ -263,7 +263,9 @@ func pingFooHandler(w http.ResponseWriter, r *http.Request) error {
 
 func environmentHandler(w http.ResponseWriter, r *http.Request) error {
 	if os.Getenv(envFlex) != "" || os.Getenv(envVM) != "" {
-		fmt.Fprintln(w, "GAE")
+		fmt.Fprint(w, "GAE")
+	} else {
+		fmt.Fprint(w, "GKE")
 	}
 	return nil
 }
