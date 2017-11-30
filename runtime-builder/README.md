@@ -4,7 +4,7 @@ This subdirectory contains sources for the new Go AppEngine Flex build pipeline
 that is currently in beta. This build pipeline utilizes [Google Cloud Container
 Builder](https://cloud.google.com/container-builder/) to produce the application
 image. The `go-1.x.yaml` configuration files are used in the build pipeline.
-User can now specify a Go version in app.yaml via `runtime: go1.x`, where 1.x
+User can now specify a Go version in app.yaml via `runtime: go1.x`, where `1.x`
 can be 1.8, 1.9, etc. The resulting application image uses
 [gcr.io/distroless/base](https://github.com/GoogleCloudPlatform/distroless/tree/master/base)
 as the base image, which contains a minimal Linux, glibc-based system.
@@ -50,8 +50,8 @@ CMD ["/usr/local/bin/app"]
 
 ## Google Cloud Container Builder
 
-Read up on [Google Cloud Container Builder
-documentation](https://cloud.google.com/container-builder/docs/).
+Read up on [Google Cloud Container
+Builder](https://cloud.google.com/container-builder/docs/).
 
 You can use one of the `go-1.x.yaml` files for configuration file. The builder
 image's `ENTRYPOINT` is the `go-build.sh` script, which expects a certain layout
@@ -61,11 +61,11 @@ of the uploaded directory. In particular, it expects --
     structure.
 *   `_gopath/main-package-path` file containing the import path of the main
     application to be built.
-*   Top level directory can contain resource files that will be bundled into the
-    application image's /app directory.
+*   top level directory can contain resource files that will be bundled into the
+    application image's `/app` directory.
 
 The build script will build the application as referenced in
-`_gopath/main-package-path` file and produce the application Dockerfile which
-the next step will run a docker build on.
+`_gopath/main-package-path` file and produce an application Dockerfile which the
+next step will run a docker build on.
 
 You can customize your own cloudbuild.yaml file with your own Dockerfile.
