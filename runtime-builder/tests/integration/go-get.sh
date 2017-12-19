@@ -13,7 +13,7 @@ echo "Fetching dependencies..."
 cd src/app
 vendor_dir="$(pwd -P)/vendor"
 mkdir "${vendor_dir}"
-go get -d -tags appenginevm
+set +e; go get -d -tags appenginevm
 deps=$(go list -f '{{ join .Deps "\n" }}' -tags appenginevm)
 
 echo "Copying dependencies..."

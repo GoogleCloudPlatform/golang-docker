@@ -92,11 +92,7 @@ type Server struct {
 	conns  map[io.Closer]bool
 	serve  bool
 	drain  bool
-	ctx    context.Context
-	cancel context.CancelFunc
-	// A CondVar to let GracefulStop() blocks until all the pending RPCs are finished
-	// and all the transport goes away.
-	cv     *sync.Cond
+	cv     *sync.Cond          // signaled when connections close for GracefulStop
 	m      map[string]*service // service name -> service info
 	events trace.EventLog
 
@@ -104,6 +100,7 @@ type Server struct {
 	done     chan struct{}
 	quitOnce sync.Once
 	doneOnce sync.Once
+	serveWG  sync.WaitGroup // counts active Serve goroutines for GracefulStop
 }
 
 type options struct {
@@ -126,11 +123,13 @@ type options struct {
 	initialConnWindowSize int32
 	writeBufferSize       int
 	readBufferSize        int
+	connectionTimeout     time.Duration
 }
 
 var defaultServerOptions = options{
 	maxReceiveMessageSize: defaultServerMaxReceiveMessageSize,
 	maxSendMessageSize:    defaultServerMaxSendMessageSize,
+	connectionTimeout:     120 * time.Second,
 }
 
 // A ServerOption sets options such as credentials, codec and keepalive parameters, etc.
@@ -189,18 +188,24 @@ func CustomCodec(codec Codec) ServerOption {
 	}
 }
 
-// RPCCompressor returns a ServerOption that sets a compressor for outbound messages.
-// It has lower priority than the compressor set by RegisterCompressor.
-// This function is deprecated.
+// RPCCompressor returns a ServerOption that sets a compressor for outbound
+// messages.  For backward compatibility, all outbound messages will be sent
+// using this compressor, regardless of incoming message compression.  By
+// default, server messages will be sent using the same compressor with which
+// request messages were sent.
+//
+// Deprecated: use encoding.RegisterCompressor instead.
 func RPCCompressor(cp Compressor) ServerOption {
 	return func(o *options) {
 		o.cp = cp
 	}
 }
 
-// RPCDecompressor returns a ServerOption that sets a decompressor for inbound messages.
-// It has higher priority than the decompressor set by RegisterCompressor.
-// This function is deprecated.
+// RPCDecompressor returns a ServerOption that sets a decompressor for inbound
+// messages.  It has higher priority than decompressors registered via
+// encoding.RegisterCompressor.
+//
+// Deprecated: use encoding.RegisterCompressor instead.
 func RPCDecompressor(dc Decompressor) ServerOption {
 	return func(o *options) {
 		o.dc = dc
@@ -303,6 +308,18 @@ func UnknownServiceHandler(streamHandler StreamHandler) ServerOption {
 	}
 }
 
+// ConnectionTimeout returns a ServerOption that sets the timeout for
+// connection establishment (up to and including HTTP/2 handshaking) for all
+// new connections.  If this is not set, the default is 120 seconds.  A zero or
+// negative value will result in an immediate timeout.
+//
+// This API is EXPERIMENTAL.
+func ConnectionTimeout(d time.Duration) ServerOption {
+	return func(o *options) {
+		o.connectionTimeout = d
+	}
+}
+
 // NewServer creates a gRPC server which has no service registered and has not
 // started to accept requests yet.
 func NewServer(opt ...ServerOption) *Server {
@@ -323,7 +340,6 @@ func NewServer(opt ...ServerOption) *Server {
 		done:  make(chan struct{}),
 	}
 	s.cv = sync.NewCond(&s.mu)
-	s.ctx, s.cancel = context.WithCancel(context.Background())
 	if EnableTracing {
 		_, file, line, _ := runtime.Caller(1)
 		s.events = trace.NewEventLog("grpc.Server", fmt.Sprintf("%s:%d", file, line))
@@ -448,16 +464,25 @@ func (s *Server) useTransportAuthenticator(rawConn net.Conn) (net.Conn, credenti
 // read gRPC requests and then call the registered handlers to reply to them.
 // Serve returns when lis.Accept fails with fatal errors.  lis will be closed when
 // this method returns.
-// Serve always returns non-nil error.
+// Serve will return a non-nil error unless Stop or GracefulStop is called.
 func (s *Server) Serve(lis net.Listener) error {
 	s.mu.Lock()
 	s.printf("serving")
 	s.serve = true
 	if s.lis == nil {
+		// Serve called after Stop or GracefulStop.
 		s.mu.Unlock()
 		lis.Close()
 		return ErrServerStopped
 	}
+
+	s.serveWG.Add(1)
+	defer func() {
+		s.serveWG.Done()
+		// Block until Stop or GracefulStop is ready for us to return.
+		<-s.done
+	}()
+
 	s.lis[lis] = true
 	s.mu.Unlock()
 	defer func() {
@@ -491,44 +516,53 @@ func (s *Server) Serve(lis net.Listener) error {
 				timer := time.NewTimer(tempDelay)
 				select {
 				case <-timer.C:
-				case <-s.ctx.Done():
+				case <-s.quit:
+					timer.Stop()
+					return nil
 				}
-				timer.Stop()
 				continue
 			}
 			s.mu.Lock()
 			s.printf("done serving; Accept = %v", err)
 			s.mu.Unlock()
 
-			// If Stop or GracefulStop is called, block until they are done and return nil
+			// If Stop or GracefulStop is called, return nil.
 			select {
 			case <-s.quit:
-				<-s.done
 				return nil
 			default:
 			}
 			return err
 		}
 		tempDelay = 0
-		// Start a new goroutine to deal with rawConn
-		// so we don't stall this Accept loop goroutine.
-		go s.handleRawConn(rawConn)
+		// Start a new goroutine to deal with rawConn so we don't stall this Accept
+		// loop goroutine.
+		//
+		// Make sure we account for the goroutine so GracefulStop doesn't nil out
+		// s.conns before this conn can be added.
+		s.serveWG.Add(1)
+		go func() {
+			s.handleRawConn(rawConn)
+			s.serveWG.Done()
+		}()
 	}
 }
 
-// handleRawConn is run in its own goroutine and handles a just-accepted
-// connection that has not had any I/O performed on it yet.
+// handleRawConn forks a goroutine to handle a just-accepted connection that
+// has not had any I/O performed on it yet.
 func (s *Server) handleRawConn(rawConn net.Conn) {
+	rawConn.SetDeadline(time.Now().Add(s.opts.connectionTimeout))
 	conn, authInfo, err := s.useTransportAuthenticator(rawConn)
 	if err != nil {
 		s.mu.Lock()
 		s.errorf("ServerHandshake(%q) failed: %v", rawConn.RemoteAddr(), err)
 		s.mu.Unlock()
 		grpclog.Warningf("grpc: Server.Serve failed to complete security handshake from %q: %v", rawConn.RemoteAddr(), err)
-		// If serverHandShake returns ErrConnDispatched, keep rawConn open.
+		// If serverHandshake returns ErrConnDispatched, keep rawConn open.
 		if err != credentials.ErrConnDispatched {
 			rawConn.Close()
 		}
+		rawConn.SetDeadline(time.Time{})
 		return
 	}
 
@@ -540,19 +574,33 @@ func (s *Server) handleRawConn(rawConn net.Conn) {
 	}
 	s.mu.Unlock()
 
+	var serve func()
+	c := conn.(io.Closer)
 	if s.opts.useHandlerImpl {
-		s.serveUsingHandler(conn)
+		serve = func() { s.serveUsingHandler(conn) }
 	} else {
-		s.serveHTTP2Transport(conn, authInfo)
+		// Finish handshaking (HTTP2)
+		st := s.newHTTP2Transport(conn, authInfo)
+		if st == nil {
+			return
+		}
+		c = st
+		serve = func() { s.serveStreams(st) }
 	}
+
+	rawConn.SetDeadline(time.Time{})
+	if !s.addConn(c) {
+		return
+	}
+	go func() {
+		serve()
+		s.removeConn(c)
+	}()
 }
 
-// serveHTTP2Transport sets up a http/2 transport (using the
-// gRPC http2 server transport in transport/http2_server.go) and
-// serves streams on it.
-// This is run in its own goroutine (it does network I/O in
-// transport.NewServerTransport).
-func (s *Server) serveHTTP2Transport(c net.Conn, authInfo credentials.AuthInfo) {
+// newHTTP2Transport sets up a http/2 transport (using the
+// gRPC http2 server transport in transport/http2_server.go).
+func (s *Server) newHTTP2Transport(c net.Conn, authInfo credentials.AuthInfo) transport.ServerTransport {
 	config := &transport.ServerConfig{
 		MaxStreams:            s.opts.maxConcurrentStreams,
 		AuthInfo:              authInfo,
@@ -572,17 +620,12 @@ func (s *Server) serveHTTP2Transport(c net.Conn, authInfo credentials.AuthInfo) 
 		s.mu.Unlock()
 		c.Close()
 		grpclog.Warningln("grpc: Server.Serve failed to create ServerTransport: ", err)
-		return
+		return nil
 	}
-	if !s.addConn(st) {
-		st.Close()
-		return
-	}
-	s.serveStreams(st)
+	return st
 }
 
 func (s *Server) serveStreams(st transport.ServerTransport) {
-	defer s.removeConn(st)
 	defer st.Close()
 	var wg sync.WaitGroup
 	st.HandleStreams(func(stream *transport.Stream) {
@@ -616,11 +659,6 @@ var _ http.Handler = (*Server)(nil)
 //
 // conn is the *tls.Conn that's already been authenticated.
 func (s *Server) serveUsingHandler(conn net.Conn) {
-	if !s.addConn(conn) {
-		conn.Close()
-		return
-	}
-	defer s.removeConn(conn)
 	h2s := &http2.Server{
 		MaxConcurrentStreams: s.opts.maxConcurrentStreams,
 	}
@@ -660,7 +698,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !s.addConn(st) {
-		st.Close()
 		return
 	}
 	defer s.removeConn(st)
@@ -690,8 +727,14 @@ func (s *Server) traceInfo(st transport.ServerTransport, stream *transport.Strea
 func (s *Server) addConn(c io.Closer) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.conns == nil || s.drain {
+	if s.conns == nil {
+		c.Close()
 		return false
+	}
+	if s.drain {
+		// Transport added after we drained our existing conns: drain it
+		// immediately.
+		c.(transport.ServerTransport).Drain()
 	}
 	s.conns[c] = true
 	return true
@@ -706,20 +749,14 @@ func (s *Server) removeConn(c io.Closer) {
 	}
 }
 
-func (s *Server) sendResponse(t transport.ServerTransport, stream *transport.Stream, msg interface{}, cp Compressor, opts *transport.Options) error {
+func (s *Server) sendResponse(t transport.ServerTransport, stream *transport.Stream, msg interface{}, cp Compressor, opts *transport.Options, comp encoding.Compressor) error {
 	var (
 		outPayload *stats.OutPayload
 	)
 	if s.opts.statsHandler != nil {
 		outPayload = &stats.OutPayload{}
 	}
-	if stream.RecvCompress() != "" {
-		// Server receives compressor, check compressor set by register and default.
-		if encoding.GetCompressor(stream.RecvCompress()) == nil && (cp == nil || cp != nil && cp.Type() != stream.RecvCompress()) {
-			return Errorf(codes.Internal, "grpc: Compressor is not installed for grpc-encoding %q", stream.RecvCompress())
-		}
-	}
-	hdr, data, err := encode(s.opts.codec, msg, cp, outPayload, encoding.GetCompressor(stream.RecvCompress()))
+	hdr, data, err := encode(s.opts.codec, msg, cp, outPayload, comp)
 	if err != nil {
 		grpclog.Errorln("grpc: server failed to encode response: ", err)
 		return err
@@ -763,12 +800,43 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 			}
 		}()
 	}
-	if stream.RecvCompress() != "" {
-		stream.SetSendCompress(stream.RecvCompress())
-	} else if s.opts.cp != nil {
-		// NOTE: this needs to be ahead of all handling, https://github.com/grpc/grpc-go/issues/686.
-		stream.SetSendCompress(s.opts.cp.Type())
+
+	// comp and cp are used for compression.  decomp and dc are used for
+	// decompression.  If comp and decomp are both set, they are the same;
+	// however they are kept separate to ensure that at most one of the
+	// compressor/decompressor variable pairs are set for use later.
+	var comp, decomp encoding.Compressor
+	var cp Compressor
+	var dc Decompressor
+
+	// If dc is set and matches the stream's compression, use it.  Otherwise, try
+	// to find a matching registered compressor for decomp.
+	if rc := stream.RecvCompress(); s.opts.dc != nil && s.opts.dc.Type() == rc {
+		dc = s.opts.dc
+	} else if rc != "" && rc != encoding.Identity {
+		decomp = encoding.GetCompressor(rc)
+		if decomp == nil {
+			st := status.Newf(codes.Unimplemented, "grpc: Decompressor is not installed for grpc-encoding %q", rc)
+			t.WriteStatus(stream, st)
+			return st.Err()
+		}
 	}
+
+	// If cp is set, use it.  Otherwise, attempt to compress the response using
+	// the incoming message compression method.
+	//
+	// NOTE: this needs to be ahead of all handling, https://github.com/grpc/grpc-go/issues/686.
+	if s.opts.cp != nil {
+		cp = s.opts.cp
+		stream.SetSendCompress(cp.Type())
+	} else if rc := stream.RecvCompress(); rc != "" && rc != encoding.Identity {
+		// Legacy compressor not specified; attempt to respond with same encoding.
+		comp = encoding.GetCompressor(rc)
+		if comp != nil {
+			stream.SetSendCompress(rc)
+		}
+	}
+
 	p := &parser{r: stream}
 	pf, req, err := p.recvMsg(s.opts.maxReceiveMessageSize)
 	if err == io.EOF {
@@ -776,7 +844,7 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 		return err
 	}
 	if err == io.ErrUnexpectedEOF {
-		err = Errorf(codes.Internal, io.ErrUnexpectedEOF.Error())
+		err = status.Errorf(codes.Internal, io.ErrUnexpectedEOF.Error())
 	}
 	if err != nil {
 		if st, ok := status.FromError(err); ok {
@@ -797,18 +865,11 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 		}
 		return err
 	}
-	if err := checkRecvPayload(pf, stream.RecvCompress(), s.opts.dc); err != nil {
-		if st, ok := status.FromError(err); ok {
-			if e := t.WriteStatus(stream, st); e != nil {
-				grpclog.Warningf("grpc: Server.processUnaryRPC failed to write status %v", e)
-			}
-			return err
-		}
-		if e := t.WriteStatus(stream, status.New(codes.Internal, err.Error())); e != nil {
+	if st := checkRecvPayload(pf, stream.RecvCompress(), dc != nil || decomp != nil); st != nil {
+		if e := t.WriteStatus(stream, st); e != nil {
 			grpclog.Warningf("grpc: Server.processUnaryRPC failed to write status %v", e)
 		}
-
-		// TODO checkRecvPayload always return RPC error. Add a return here if necessary.
+		return st.Err()
 	}
 	var inPayload *stats.InPayload
 	if sh != nil {
@@ -822,17 +883,16 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 		}
 		if pf == compressionMade {
 			var err error
-			if s.opts.dc != nil {
-				req, err = s.opts.dc.Do(bytes.NewReader(req))
+			if dc != nil {
+				req, err = dc.Do(bytes.NewReader(req))
 				if err != nil {
-					return Errorf(codes.Internal, err.Error())
+					return status.Errorf(codes.Internal, err.Error())
 				}
 			} else {
-				dcReader := encoding.GetCompressor(stream.RecvCompress())
-				tmp, _ := dcReader.Decompress(bytes.NewReader(req))
+				tmp, _ := decomp.Decompress(bytes.NewReader(req))
 				req, err = ioutil.ReadAll(tmp)
 				if err != nil {
-					return Errorf(codes.Internal, "grpc: failed to decompress the received message %v", err)
+					return status.Errorf(codes.Internal, "grpc: failed to decompress the received message %v", err)
 				}
 			}
 		}
@@ -879,7 +939,8 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 		Last:  true,
 		Delay: false,
 	}
-	if err := s.sendResponse(t, stream, reply, s.opts.cp, opts); err != nil {
+
+	if err := s.sendResponse(t, stream, reply, cp, opts, comp); err != nil {
 		if err == io.EOF {
 			// The entire stream is done (for unary RPC only).
 			return err
@@ -928,24 +989,45 @@ func (s *Server) processStreamingRPC(t transport.ServerTransport, stream *transp
 			sh.HandleRPC(stream.Context(), end)
 		}()
 	}
-	if stream.RecvCompress() != "" {
-		stream.SetSendCompress(stream.RecvCompress())
-	} else if s.opts.cp != nil {
-		stream.SetSendCompress(s.opts.cp.Type())
-	}
 	ss := &serverStream{
-		t:      t,
-		s:      stream,
-		p:      &parser{r: stream},
-		codec:  s.opts.codec,
-		cpType: stream.RecvCompress(),
-		cp:     s.opts.cp,
-		dc:     s.opts.dc,
+		t:     t,
+		s:     stream,
+		p:     &parser{r: stream},
+		codec: s.opts.codec,
 		maxReceiveMessageSize: s.opts.maxReceiveMessageSize,
 		maxSendMessageSize:    s.opts.maxSendMessageSize,
 		trInfo:                trInfo,
 		statsHandler:          sh,
 	}
+
+	// If dc is set and matches the stream's compression, use it.  Otherwise, try
+	// to find a matching registered compressor for decomp.
+	if rc := stream.RecvCompress(); s.opts.dc != nil && s.opts.dc.Type() == rc {
+		ss.dc = s.opts.dc
+	} else if rc != "" && rc != encoding.Identity {
+		ss.decomp = encoding.GetCompressor(rc)
+		if ss.decomp == nil {
+			st := status.Newf(codes.Unimplemented, "grpc: Decompressor is not installed for grpc-encoding %q", rc)
+			t.WriteStatus(ss.s, st)
+			return st.Err()
+		}
+	}
+
+	// If cp is set, use it.  Otherwise, attempt to compress the response using
+	// the incoming message compression method.
+	//
+	// NOTE: this needs to be ahead of all handling, https://github.com/grpc/grpc-go/issues/686.
+	if s.opts.cp != nil {
+		ss.cp = s.opts.cp
+		stream.SetSendCompress(s.opts.cp.Type())
+	} else if rc := stream.RecvCompress(); rc != "" && rc != encoding.Identity {
+		// Legacy compressor not specified; attempt to respond with same encoding.
+		ss.comp = encoding.GetCompressor(rc)
+		if ss.comp != nil {
+			stream.SetSendCompress(rc)
+		}
+	}
+
 	if trInfo != nil {
 		trInfo.tr.LazyLog(&trInfo.firstLine, false)
 		defer func() {
@@ -1094,6 +1176,7 @@ func (s *Server) Stop() {
 	})
 
 	defer func() {
+		s.serveWG.Wait()
 		s.doneOnce.Do(func() {
 			close(s.done)
 		})
@@ -1116,7 +1199,6 @@ func (s *Server) Stop() {
 	}
 
 	s.mu.Lock()
-	s.cancel()
 	if s.events != nil {
 		s.events.Finish()
 		s.events = nil
@@ -1139,21 +1221,27 @@ func (s *Server) GracefulStop() {
 	}()
 
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	if s.conns == nil {
+		s.mu.Unlock()
 		return
 	}
 	for lis := range s.lis {
 		lis.Close()
 	}
 	s.lis = nil
-	s.cancel()
 	if !s.drain {
 		for c := range s.conns {
 			c.(transport.ServerTransport).Drain()
 		}
 		s.drain = true
 	}
+
+	// Wait for serving threads to be ready to exit.  Only then can we be sure no
+	// new conns will be created.
+	s.mu.Unlock()
+	s.serveWG.Wait()
+	s.mu.Lock()
+
 	for len(s.conns) != 0 {
 		s.cv.Wait()
 	}
@@ -1162,26 +1250,13 @@ func (s *Server) GracefulStop() {
 		s.events.Finish()
 		s.events = nil
 	}
+	s.mu.Unlock()
 }
 
 func init() {
-	internal.TestingCloseConns = func(arg interface{}) {
-		arg.(*Server).testingCloseConns()
-	}
 	internal.TestingUseHandlerImpl = func(arg interface{}) {
 		arg.(*Server).opts.useHandlerImpl = true
 	}
-}
-
-// testingCloseConns closes all existing transports but keeps s.lis
-// accepting new connections.
-func (s *Server) testingCloseConns() {
-	s.mu.Lock()
-	for c := range s.conns {
-		c.Close()
-		delete(s.conns, c)
-	}
-	s.mu.Unlock()
 }
 
 // SetHeader sets the header metadata.
@@ -1196,7 +1271,7 @@ func SetHeader(ctx context.Context, md metadata.MD) error {
 	}
 	stream, ok := transport.StreamFromContext(ctx)
 	if !ok {
-		return Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
+		return status.Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
 	}
 	return stream.SetHeader(md)
 }
@@ -1206,7 +1281,7 @@ func SetHeader(ctx context.Context, md metadata.MD) error {
 func SendHeader(ctx context.Context, md metadata.MD) error {
 	stream, ok := transport.StreamFromContext(ctx)
 	if !ok {
-		return Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
+		return status.Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
 	}
 	t := stream.ServerTransport()
 	if t == nil {
@@ -1226,7 +1301,7 @@ func SetTrailer(ctx context.Context, md metadata.MD) error {
 	}
 	stream, ok := transport.StreamFromContext(ctx)
 	if !ok {
-		return Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
+		return status.Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
 	}
 	return stream.SetTrailer(md)
 }
