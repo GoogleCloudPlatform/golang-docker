@@ -15,7 +15,8 @@
 # Dockerfile for building a Go application and generating the corresponding
 # application Dockerfile for it.  It expects the following build-args:
 #   go_version - Go SDK version to be bundled in this image.
-#   base_digest - DEBIAN digest for use when generating application Dockerfile.
+#   base_digest - distroless/base digest for use when generating application Dockerfile.
+#   build_tag - Docker label added into generated application image to identify builder.
 # When this builder image is executed, it expects the application source files
 # to be mounted at the current work directory.
 
