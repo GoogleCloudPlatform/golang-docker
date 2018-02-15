@@ -31,10 +31,9 @@ STAGING_BUILDER_IMAGE=${2:-gcr.io/${PROJECT}/go1-builder:staging}
 echo "Builder image: ${STAGING_BUILDER_IMAGE}"
 
 # Make sure gcloud is configured to use the local directory.
-use_rb="$(gcloud config get-value app/use_runtime_builders)"
 rb_root="$(gcloud config get-value app/runtime_builders_root)"
-if [[ "${use_rb}" = "False" || "${rb_root}" != file://* ]]; then
-    echo "Wrong gcloud config found for app/use_runtime_builders or app/runtime_builders_root."
+if [[ "${rb_root}" != file://* ]]; then
+    echo "Wrong gcloud config found for app/runtime_builders_root."
     exit 1
 fi
 

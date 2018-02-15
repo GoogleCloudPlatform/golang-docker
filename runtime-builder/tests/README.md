@@ -28,7 +28,6 @@ The test.sh script executes the end-to-end test with the following steps:
 To perform the test:
 * Manually run a container build of the go1-builder image. Skip this step if
   you already have an existing image in GCR that you want to test.
-* Set `gcloud config set app/use_runtime_builders true`
 * Set `gcloud config set app/runtime_builders_root` to the integration
   directory.
 * Run test.sh.
