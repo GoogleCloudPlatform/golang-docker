@@ -1,12 +1,10 @@
 # Go runtime builder
 
-This subdirectory contains sources for the new Go AppEngine Flex build pipeline
-that is currently in beta. This build pipeline utilizes [Google Cloud Container
-Builder](https://cloud.google.com/container-builder/) to produce the application
-image. The `go-1.x.yaml` configuration files are used in the build pipeline.
+This subdirectory contains sources for the Go App Engine Flex build pipeline.
+This build pipeline utilizes [Google Cloud Container Builder](https://cloud.google.com/container-builder/) to produce the application image.
+The `go-1.x.yaml` configuration files are used in the build pipeline.
 User can now specify a Go version in app.yaml via `runtime: go1.x`, where `1.x`
-can be 1.8, 1.9, etc. The resulting application image uses
-[gcr.io/distroless/base](https://github.com/GoogleCloudPlatform/distroless/tree/master/base)
+can be 1.8, 1.9, etc. The resulting application image uses [gcr.io/distroless/base](https://github.com/GoogleCloudPlatform/distroless/tree/master/base)
 as the base image, which contains a minimal Linux, glibc-based system.
 
 The builder image `gcr.io/gcp-runtimes/go1-builder` is tagged with supported Go
