@@ -22,10 +22,6 @@
 
 FROM gcr.io/google-appengine/debian9:latest
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
-
 ARG go_version
 ARG base_digest
 ARG build_tag
@@ -37,13 +33,10 @@ ENV BUILD_TAG ${build_tag}
 COPY checksums/go${GO_VERSION}.sha256 /tmp/
 
 # Download SDK and validate.
-RUN curl -sSL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
-    echo "$(cat /tmp/go${GO_VERSION}.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
+ADD https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz /tmp/go.tar.gz
+RUN echo "$(cat /tmp/go${GO_VERSION}.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -xzf /tmp/go.tar.gz && \
-    rm /tmp/go.tar.gz /tmp/go${GO_VERSION}.sha256 && \
-    # Remove libgnutls30 dependency brought in by curl. we cannot use it because
-    # one of its dependencies uses the AGPL license.
-    dpkg --remove --force-depends libgnutls30
+    rm /tmp/go.tar.gz /tmp/go${GO_VERSION}.sha256
 
 COPY go-build.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/go-build.sh
