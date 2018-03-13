@@ -20,11 +20,7 @@
 # When this builder image is executed, it expects the application source files
 # to be mounted at the current work directory.
 
-FROM gcr.io/google-appengine/debian8:latest
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+FROM gcr.io/google-appengine/debian9:latest
 
 ARG go_version
 ARG base_digest
@@ -37,8 +33,8 @@ ENV BUILD_TAG ${build_tag}
 COPY checksums/go${GO_VERSION}.sha256 /tmp/
 
 # Download SDK and validate.
-RUN curl -sSL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
-    echo "$(cat /tmp/go${GO_VERSION}.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
+ADD https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz /tmp/go.tar.gz
+RUN echo "$(cat /tmp/go${GO_VERSION}.sha256)  /tmp/go.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -xzf /tmp/go.tar.gz && \
     rm /tmp/go.tar.gz /tmp/go${GO_VERSION}.sha256
 
