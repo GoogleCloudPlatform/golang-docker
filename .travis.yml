@@ -12,9 +12,9 @@ branches:
     - master
 
 script:
-- curl https://raw.githubusercontent.com/GoogleCloudPlatform/container-structure-test/master/ext_run.sh > ext_run.sh
-- chmod +x ext_run.sh
+- curl -o structure-test -sSLO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64
+- chmod +x structure-test
 - docker build -t "${IMAGE_NAME}" -q base/
-- ./ext_run.sh -i "${IMAGE_NAME}" -v --config test/test_config.yaml
+- ./structure-test test --image "${IMAGE_NAME}" --config test/test_config.yaml
 - docker build -t "go1-builder:${GO_VERSION}" --build-arg go_version="${GO_VERSION}" -q runtime-builder/
-- ./ext_run.sh -i "go1-builder:${GO_VERSION}" -v --config runtime-builder/tests/structure/test_config.yaml
+- ./structure-test test --image "go1-builder:${GO_VERSION}" --config runtime-builder/tests/structure/test_config.yaml
