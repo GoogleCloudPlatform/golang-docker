@@ -12,7 +12,7 @@ branches:
     - master
 
 script:
-- curl -sSLO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 -o structure-test
+- curl -o structure-test -sSLO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64
 - chmod +x structure-test
 - docker build -t "${IMAGE_NAME}" -q base/
 - ./structure-test test --image "${IMAGE_NAME}" --config test/test_config.yaml
