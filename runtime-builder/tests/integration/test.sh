@@ -46,4 +46,4 @@ export GOPATH=$(pwd -P)
 
 echo "Deploying test app using config in ${rb_root}/runtimes.yaml"
 gcloud app deploy -q --project="${PROJECT}" src/app/app.yaml
-gcloud container builds submit --project="${PROJECT}" --config=go-test.yaml .
+gcloud builds submit --project="${PROJECT}" --config=go-test.yaml .

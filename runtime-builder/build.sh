@@ -55,7 +55,7 @@ base_digest
 
 echo "Building builder image with PROJECT_ID=${PROJECT_ID}, BUILD_TAG=${BUILD_TAG}, BASE_DIGEST=${BASE_DIGEST}"
 
-gcloud container builds submit \
+gcloud builds submit \
   --project="${PROJECT_ID}" \
   --substitutions "_PROJECT_ID=${PROJECT_ID},_GO_VERSION=${GO_VERSION},_BUILD_TAG=${BUILD_TAG},_BASE_DIGEST=${BASE_DIGEST}" \
   --config=cloudbuild.yaml .

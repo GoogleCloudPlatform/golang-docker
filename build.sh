@@ -25,4 +25,4 @@ if [ -z "$IMAGE" ]; then
 fi
 
 envsubst < base/cloudbuild.yaml.in > base/cloudbuild.yaml
-gcloud beta container builds submit --config=base/cloudbuild.yaml .
+gcloud builds submit --config=base/cloudbuild.yaml .
