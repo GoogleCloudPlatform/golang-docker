@@ -23,10 +23,10 @@ dependencies if necessary.
 The test.sh script executes the end-to-end test with the following steps:
 * Generate a test.yaml file for use as the cloudbuild.yaml referenced in runtimes.yaml.
 * Deploy the test app.
-* Executes the integration test defined in go-test.yaml through Container Builder.
+* Executes the integration test defined in go-test.yaml through Cloud Build.
 
 To perform the test:
-* Manually run a container build of the go1-builder image. Skip this step if
+* Manually run a Cloud Build of the go1-builder image. Skip this step if
   you already have an existing image in GCR that you want to test.
 * Set `gcloud config set app/runtime_builders_root` to the integration
   directory.
@@ -42,6 +42,6 @@ test.sh <project_id> [builder_image_url]
 
 ### Caveat
 There is an issue with the authentication of the test framework.  The test
-robot of the cloud container build system doesn't have the correct
+robot of the Cloud Build system doesn't have the correct
 authentication to read the monitoring metrics or log entries.
 Affected tests are skipped until the issue is fixed.
