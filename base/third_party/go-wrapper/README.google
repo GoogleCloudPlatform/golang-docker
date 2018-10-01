@@ -1,9 +1,0 @@
-URL: https://raw.githubusercontent.com/docker-library/golang/7fd2b76513e537343f088da671a51f5b2ea7d4c3/1.6/go-wrapper
-Version: 7fd2b76513e537343f088da671a51f5b2ea7d4c3
-License: BSD
-License File: LICENSE
-Description:
-The go-wrapper bash script from the Docker Official Image for Go.
-
-Local Modifications:
-No modifications.

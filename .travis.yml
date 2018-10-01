@@ -14,7 +14,5 @@ branches:
 script:
 - curl -o structure-test -sSLO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64
 - chmod +x structure-test
-- docker build -t "${IMAGE_NAME}" -q base/
-- ./structure-test test --image "${IMAGE_NAME}" --config test/test_config.yaml
 - docker build -t "go1-builder:${GO_VERSION}" --build-arg go_version="${GO_VERSION}" -q runtime-builder/
 - ./structure-test test --image "go1-builder:${GO_VERSION}" --config runtime-builder/tests/structure/test_config.yaml
