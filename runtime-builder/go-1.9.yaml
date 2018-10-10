@@ -1,6 +1,4 @@
 steps:
 - name: 'gcr.io/gcp-runtimes/go1-builder:1.9'
-- name: 'gcr.io/cloud-builders/docker:latest'
-  args: ['build', '-t', '$_OUTPUT_IMAGE', '.']
-images:
-- '$_OUTPUT_IMAGE'
+- name: 'gcr.io/kaniko-project/executor:v0.4.0'
+  args: ['--destination=$_OUTPUT_IMAGE']
