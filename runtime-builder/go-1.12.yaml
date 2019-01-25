@@ -1,0 +1,4 @@
+steps:
+- name: 'gcr.io/gcp-runtimes/go1-builder:1.12'
+- name: 'gcr.io/kaniko-project/executor:v0.6.0'
+  args: ['--destination=$_OUTPUT_IMAGE']
