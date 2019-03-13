@@ -3,7 +3,7 @@
 set -ex
 
 export KOKORO_GITHUB_DIR=${KOKORO_ROOT}/src/github
-source ${KOKORO_GFILE_DIR}/common.sh
+source ${KOKORO_GFILE_DIR}/kokoro/common.sh
 
 export GOOGLE_CLOUD_PROJECT=gcp-runtimes
 
