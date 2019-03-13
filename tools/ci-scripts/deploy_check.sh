@@ -2,7 +2,8 @@
 
 set -ex
 
-source ${KOKORO_ROOT}/src/github/golang-docker/tools/ci-scripts/common.sh
+export KOKORO_GITHUB_DIR=${KOKORO_ROOT}/src/github
+source ${KOKORO_GFILE_DIR}/common.sh
 
 cd ${KOKORO_GITHUB_DIR}/${SAMPLE_APP_DIRECTORY}
 if [ -n "${RUNTIME_SPEC}" -a -f app.yaml.in ]; then
