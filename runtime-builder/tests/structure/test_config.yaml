@@ -11,5 +11,5 @@ fileExistenceTests:
   permissions: '-rwxr-xr-x'
 
 licenseTests:
-- debian: true
+- debian: false
   files: []
