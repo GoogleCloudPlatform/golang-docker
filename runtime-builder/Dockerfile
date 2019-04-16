@@ -20,7 +20,7 @@
 # When this builder image is executed, it expects the application source files
 # to be mounted at the current work directory.
 
-FROM gcr.io/google-appengine/debian9:latest
+FROM gcr.io/gcp-runtimes/ubuntu_16_0_4:latest
 
 ARG go_version
 ARG base_digest
