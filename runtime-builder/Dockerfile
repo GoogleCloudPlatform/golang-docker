@@ -29,6 +29,8 @@ ENV GO_VERSION ${go_version}
 ENV BASE_DIGEST ${base_digest}
 ENV BUILD_TAG ${build_tag}
 
+RUN apt-get update -yq && apt-get upgrade -yq
+
 # Copy checksum for use in validation.
 COPY checksums/go${GO_VERSION}.sha256 /tmp/
 
