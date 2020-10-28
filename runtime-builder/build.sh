@@ -28,7 +28,7 @@ base_digest()
   # Note 'describe' needs different permission than 'list-tags', etc, if we have issue with
   # it, use the --log-http flag to get more info if it fails.
   # 'describe' requires Cloud SDK v175.0.0.
-  base_image="gcr.io/distroless/base:latest"
+  base_image="gcr.io/distroless/base:latest-amd64"
   local digest="$(gcloud container images describe ${base_image} --format='value(image_summary.digest)')"
 
   # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
