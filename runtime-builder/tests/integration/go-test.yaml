@@ -6,3 +6,5 @@ steps:
     '--skip-standard-logging-tests',
     '--skip-custom-logging-tests'
   ]
+options:
+  logging: CLOUD_LOGGING_ONLY
