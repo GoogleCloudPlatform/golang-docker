@@ -18,3 +18,5 @@ steps:
   ]
 
 images: ['gcr.io/${_PROJECT_ID}/go1-builder:${_BUILD_TAG}']
+options:
+  logging: CLOUD_LOGGING_ONLY

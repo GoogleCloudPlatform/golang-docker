@@ -4,3 +4,5 @@ steps:
   args: ['build', '-t', '${_OUTPUT_IMAGE}', '.']
 images:
 - '${_OUTPUT_IMAGE}'
+options:
+  logging: CLOUD_LOGGING_ONLY

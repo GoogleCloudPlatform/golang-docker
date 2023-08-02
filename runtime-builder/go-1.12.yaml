@@ -2,3 +2,5 @@ steps:
 - name: 'gcr.io/gcp-runtimes/go1-builder:1.12'
 - name: 'gcr.io/kaniko-project/executor:v1.3.0'
   args: ['--destination=$_OUTPUT_IMAGE']
+options:
+  logging: CLOUD_LOGGING_ONLY
