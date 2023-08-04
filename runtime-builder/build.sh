@@ -25,18 +25,10 @@ usage() { echo "Usage: $0 <project> <go_version>"; exit 1; }
 
 base_digest()
 {
-  # Note 'describe' needs different permission than 'list-tags', etc, if we have issue with
-  # it, use the --log-http flag to get more info if it fails.
-  # 'describe' requires Cloud SDK v175.0.0.
-  base_image="gcr.io/distroless/base:latest-amd64"
-  local digest="$(gcloud container images describe ${base_image} --format='value(image_summary.digest)')"
-
-  # The digest consists a prefix "sha256:", the hash string and a trailing newline character.
-  if [[ -z "digest" ]]; then
-    echo "$0: no digest found for ${base_image}"
-    exit 1
-  fi
-  export BASE_DIGEST="${digest}"
+  # The following PR changed the base image from Docker V2 format to OCI format, which no longer works in
+  # Flex deployments. So, the current solution is to pin to a gcr.io/distroless/base digest in Docker V2 format.
+  # https://github.com/GoogleContainerTools/distroless/pull/1256
+  export BASE_DIGEST="sha256:c88e34ed6523503e4f63c62a3384e2c3492c71d8cf4cc9f4bbee2b0349c6ee9a"
 }
 
 if [[ "$#" -ne 2 ]]; then
